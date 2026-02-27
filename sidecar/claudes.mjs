@@ -10,9 +10,9 @@
 //   ┗┛┗┛ ┗┛┗┛         line 5: feet
 //
 // mini (garden, 3 lines × 5 chars):
-//    ▐ ▌
-//   ▐· ·▌
-//    ▘ ▝
+//   [acc]          line 0: accessory (or 5 spaces)
+//   ▐· ·▌          line 1: face
+//    ▘ ▝           line 2: feet
 
 export const RARITY_NAMES = ['', 'Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
 export const RARITY_STARS = ['', '\u2605', '\u2605\u2605', '\u2605\u2605\u2605', '\u2605\u2605\u2605\u2605', '\u2605\u2605\u2605\u2605\u2605'];
@@ -36,7 +36,7 @@ export const ALL_CLAUDES = [
   {
     id: 'normal', name: 'Normal', rarity: 1,
     desc: 'Just your everyday Claude.',
-    mini: [' \u2590 \u258c ', '\u2590\u00b7 \u00b7\u258c', ' \u2598 \u259d '],
+    mini: ['     ', '\u2590\u00b7 \u00b7\u258c', ' \u2598 \u259d '],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -49,7 +49,7 @@ export const ALL_CLAUDES = [
   {
     id: 'sleepy', name: 'Sleepy', rarity: 1,
     desc: 'Zzz... five more minutes.',
-    mini: [' \u2590 \u258c ', '\u2590- -\u258c', ' \u2598 \u259d '],
+    mini: ['  z  ', '\u2590- -\u258c', ' \u2598 \u259d '],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -62,7 +62,7 @@ export const ALL_CLAUDES = [
   {
     id: 'happy', name: 'Happy', rarity: 1,
     desc: 'Having a great day!',
-    mini: [' \u2590 \u258c ', '\u2590^ ^\u258c', ' \u2598 \u259d '],
+    mini: ['     ', '\u2590^ ^\u258c', ' \u2598 \u259d '],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -75,7 +75,7 @@ export const ALL_CLAUDES = [
   {
     id: 'thinker', name: 'Thinker', rarity: 1,
     desc: 'Deep in thought...',
-    mini: [' \u2590 \u258c?', '\u2590\u00b7 \u00b7\u258c', ' \u2598~\u259d '],
+    mini: ['    ?', '\u2590\u00b7 \u00b7\u258c', ' \u2598~\u259d '],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513?',
@@ -88,7 +88,7 @@ export const ALL_CLAUDES = [
   {
     id: 'shy', name: 'Shy', rarity: 1,
     desc: "D-don't look at me!",
-    mini: [' \u2590 \u258c ', '\u2590>.<\u258c', ' \u2598.\u259d '],
+    mini: ['     ', '\u2590>.<\u258c', ' \u2598.\u259d '],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -101,7 +101,7 @@ export const ALL_CLAUDES = [
   {
     id: 'wink', name: 'Wink', rarity: 1,
     desc: '*wink*',
-    mini: [' \u2590 \u258c ', '\u2590~ \u00b7\u258c', ' \u2598 \u259d '],
+    mini: ['     ', '\u2590~ \u00b7\u258c', ' \u2598 \u259d '],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -114,7 +114,7 @@ export const ALL_CLAUDES = [
   {
     id: 'surprised', name: 'Surprised', rarity: 1,
     desc: 'Whoa, what was that?!',
-    mini: [' \u2590!\u258c ', '\u2590O O\u258c', ' \u2598 \u259d '],
+    mini: ['  !  ', '\u2590O O\u258c', ' \u2598 \u259d '],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501!\u2513 ',
@@ -127,7 +127,7 @@ export const ALL_CLAUDES = [
   {
     id: 'chill', name: 'Chill', rarity: 1,
     desc: 'No worries, mate.',
-    mini: [' \u2590 \u258c ', '\u2590- \u00b7\u258c', ' \u2598  \u259d'],
+    mini: ['     ', '\u2590- \u00b7\u258c', ' \u2598  \u259d'],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -157,7 +157,7 @@ export const ALL_CLAUDES = [
   {
     id: 'pirate', name: 'Pirate', rarity: 2,
     desc: "Arr! Where's me code?",
-    mini: ['_\u2590 \u258c ', '\u2590\u00b7 x\u258c', ' \u2598 \u259d '],
+    mini: [' \u2581\u2580\u2580\u2581', '\u2590\u00b7 x\u258c', ' \u2598 \u259d '],
     sprite: [
       '   \u2581\u259f\u2588\u2588\u2588\u2599\u2581   ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -183,7 +183,7 @@ export const ALL_CLAUDES = [
   {
     id: 'dj', name: 'DJ', rarity: 2,
     desc: 'Droppin sick beats.',
-    mini: ['d\u2590 \u258cb', '\u2590~ ~\u258c', ' \u2598 \u259d '],
+    mini: ['d   b', '\u2590~ ~\u258c', ' \u2598 \u259d '],
     sprite: [
       '\u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513',
       '\u2588\u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513\u2588',
@@ -196,7 +196,7 @@ export const ALL_CLAUDES = [
   {
     id: 'nerd', name: 'Nerd', rarity: 2,
     desc: "Well, actually...",
-    mini: [' \u2590 \u258c ', '\u2590# #\u258c', ' \u2598 \u259d '],
+    mini: ['     ', '\u2590# #\u258c', ' \u2598 \u259d '],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -209,7 +209,7 @@ export const ALL_CLAUDES = [
   {
     id: 'grumpy', name: 'Grumpy', rarity: 2,
     desc: 'Everything is broken.',
-    mini: [' \u2590 \u258c ', '\u2590> <\u258c', ' \u2598_\u259d '],
+    mini: ['     ', '\u2590> <\u258c', ' \u2598_\u259d '],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -222,7 +222,7 @@ export const ALL_CLAUDES = [
   {
     id: 'royal', name: 'Royal', rarity: 2,
     desc: 'Your Majesty!',
-    mini: ['w\u2590 \u258cw', '\u2590o O\u258c', ' \u2598 \u259d '],
+    mini: ['w\u25e3\u25b2\u25e2w', '\u2590o O\u258c', ' \u2598 \u259d '],
     sprite: [
       '   \u25e3\u25e2\u25e3\u25e2\u25e3\u25e2    ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -235,7 +235,7 @@ export const ALL_CLAUDES = [
   {
     id: 'zombie', name: 'Zombie', rarity: 2,
     desc: 'Undead and coding...',
-    mini: [' \u2590 \u258c ', '\u2590x x\u258c', ' \u2596 \u2597 '],
+    mini: ['     ', '\u2590x x\u258c', ' \u2596 \u2597 '],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501#\u2501\u2513 ',
@@ -265,7 +265,7 @@ export const ALL_CLAUDES = [
   {
     id: 'wizard', name: 'Wizard', rarity: 3,
     desc: 'Casting code spells!',
-    mini: ['~\u2590 \u258c~', '\u2590* *\u258c', ' \u2598 \u259d '],
+    mini: ['\u2581\u259f\u2599\u2581 ', '\u2590* *\u258c', ' \u2598 \u259d '],
     sprite: [
       '     \u2581\u259f\u2599\u2581    ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -278,7 +278,7 @@ export const ALL_CLAUDES = [
   {
     id: 'astro', name: 'Astro', rarity: 3,
     desc: 'To the stars!',
-    mini: ['(\u2590 \u258c)', '\u2590\u00b7 \u00b7\u258c', ' \u2598 \u259d '],
+    mini: ['(   )', '\u2590\u00b7 \u00b7\u258c', ' \u2598 \u259d '],
     sprite: [
       '    \u2581\u2581\u2581\u2581\u2581    ',
       ' \u250f(\u2501\u2501\u2501\u2501\u2501\u2501\u2501)\u2513 ',
@@ -291,7 +291,7 @@ export const ALL_CLAUDES = [
   {
     id: 'samurai', name: 'Samurai', rarity: 3,
     desc: 'The way of code.',
-    mini: ['\u2501\u2590 \u258c\u2501', '\u2590= =\u258c', ' \u2598 \u259d '],
+    mini: ['\u2501\u2501\u25b2\u2501\u2501', '\u2590= =\u258c', ' \u2598 \u259d '],
     sprite: [
       '  \u2501\u2501\u2501\u2501\u25b2\u2501\u2501\u2501\u2501  ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -304,7 +304,7 @@ export const ALL_CLAUDES = [
   {
     id: 'ghost', name: 'Ghost', rarity: 3,
     desc: 'Boo! ...can you see me?',
-    mini: [' \u2590 \u258c ', '\u2590\u00b7 \u00b7\u258c', ' ~~~ '],
+    mini: ['     ', '\u2590\u00b7 \u00b7\u258c', ' ~~~ '],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -317,7 +317,7 @@ export const ALL_CLAUDES = [
   {
     id: 'pixel', name: 'Pixel', rarity: 3,
     desc: '8-bit vibes.',
-    mini: [' \u2588 \u2588 ', '\u2588\u2588 \u2588\u2588', ' \u2588 \u2588 '],
+    mini: ['     ', '\u2588\u2588 \u2588\u2588', ' \u2588 \u2588 '],
     sprite: [
       '  \u2588\u2588     \u2588\u2588  ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -334,7 +334,7 @@ export const ALL_CLAUDES = [
   {
     id: 'dragon', name: 'Dragon', rarity: 4,
     desc: 'Breathes fire and code.',
-    mini: ['w\u2590 \u258cw', '\u2590O O\u258c', ' \u2598M\u259d '],
+    mini: ['w   w', '\u2590O O\u258c', ' \u2598M\u259d '],
     sprite: [
       '   w\u25e2   \u25e3w   ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -347,7 +347,7 @@ export const ALL_CLAUDES = [
   {
     id: 'mecha', name: 'Mecha', rarity: 4,
     desc: 'Fully armored.',
-    mini: ['|\u2590 \u258c|', '[# #]', '=\u2598 \u259d='],
+    mini: ['|   |', '[# #]', '=\u2598 \u259d='],
     sprite: [
       '   |\u2590   \u258c|   ',
       ' \u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557 ',
@@ -360,7 +360,7 @@ export const ALL_CLAUDES = [
   {
     id: 'phoenix', name: 'Phoenix', rarity: 4,
     desc: 'Rises from every crash.',
-    mini: ['~\u2590 \u258c~', '\u2590^ ^\u258c', '~\u2598 \u259d~'],
+    mini: ['~ ~ ~', '\u2590^ ^\u258c', '~\u2598 \u259d~'],
     sprite: [
       '  ~\u2572\u2581\u2581\u2581\u2581\u2581\u2571~  ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -373,7 +373,7 @@ export const ALL_CLAUDES = [
   {
     id: 'galaxy', name: 'Galaxy', rarity: 4,
     desc: 'Made of stardust.',
-    mini: ['*\u2590 \u258c*', '\u2590@ @\u258c', '*\u2598 \u259d*'],
+    mini: ['* * *', '\u2590@ @\u258c', '*\u2598 \u259d*'],
     sprite: [
       '   *     *   ',
       '*\u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -390,7 +390,7 @@ export const ALL_CLAUDES = [
   {
     id: 'opus', name: 'Opus', rarity: 5,
     desc: 'The ultimate form.',
-    mini: ['*\u2590 \u258c*', '{\u25c6 \u25c6}', '<\u2598 \u259d>'],
+    mini: ['* * *', '{\u25c6 \u25c6}', '<\u2598 \u259d>'],
     sprite: [
       '  *  \u2581\u2581\u2581  *  ',
       '*\u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513*',
@@ -403,7 +403,7 @@ export const ALL_CLAUDES = [
   {
     id: 'rainbow', name: 'Rainbow', rarity: 5,
     desc: 'All colors at once.',
-    mini: ['~\u2590 \u258c~', '\u2590o~o\u258c', ' \u2598 \u259d '],
+    mini: ['~~~~~', '\u2590o~o\u258c', ' \u2598 \u259d '],
     sprite: [
       ' ~~ ~~~~~ ~~ ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -416,7 +416,7 @@ export const ALL_CLAUDES = [
   {
     id: 'mystery', name: '???', rarity: 5,
     desc: 'Nobody knows what this is.',
-    mini: ['?\u2590 \u258c?', '\u2590? ?\u258c', '?\u2598 \u259d?'],
+    mini: ['? ? ?', '\u2590? ?\u258c', '?\u2598 \u259d?'],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
