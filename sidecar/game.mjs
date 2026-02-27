@@ -3,9 +3,11 @@
 import { ALL_CLAUDES, RARITY_STARS, DUP_BONUS } from './claudes.mjs';
 import { FACILITIES, FACILITY_KEYS, getFacilityValue, getUpgradeCost } from './facilities.mjs';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const STATE_PATH = join(import.meta.dirname, '..', 'state.json');
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const STATE_PATH = join(__dirname, '..', 'state.json');
 
 // Rarity spawn weights (before cooling multiplier)
 const BASE_WEIGHTS = { 1: 100, 2: 20, 3: 5, 4: 1, 5: 0.1 };

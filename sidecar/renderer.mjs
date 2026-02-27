@@ -290,7 +290,7 @@ function renderCollection(game) {
   while (lines.length < 20) lines.push(emptyBox(W));
 
   lines.push(midB(W));
-  lines.push(box(`${C.dim}[\u2190\u2191\u2192\u2193] Move [\u21B5] Detail [Tab] Back${C.reset}`, W));
+  lines.push(box(`${C.dim}[\u2190\u2191\u2192\u2193] Move [\u21B5] Detail [Esc] Back [Tab] Next${C.reset}`, W));
   lines.push(botB(W));
 
   return lines.join('\n');
@@ -338,7 +338,7 @@ function renderUpgrades(game) {
   while (lines.length < 20) lines.push(emptyBox(W));
 
   lines.push(midB(W));
-  lines.push(box(`${C.dim}[1-4] Upgrade [Tab] Back [Space] Collect${C.reset}`, W));
+  lines.push(box(`${C.dim}[1-4] Upgrade [Esc] Back [Tab] Next [Space] Collect${C.reset}`, W));
   lines.push(botB(W));
 
   return lines.join('\n');

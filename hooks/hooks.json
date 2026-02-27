@@ -3,25 +3,25 @@
     "SessionStart": [
       {
         "type": "command",
-        "command": "${CLAUDE_PLUGIN_ROOT}/scripts/on-session-start.sh"
+        "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/on-session-start.mjs\""
       }
     ],
     "PostToolUse": [
       {
         "type": "command",
-        "command": "${CLAUDE_PLUGIN_ROOT}/scripts/on-post-tool.sh"
+        "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/on-post-tool.mjs\""
       }
     ],
     "PostToolUseFailure": [
       {
         "type": "command",
-        "command": "${CLAUDE_PLUGIN_ROOT}/scripts/on-post-tool-fail.sh"
+        "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/on-post-tool-fail.mjs\""
       }
     ],
     "Stop": [
       {
         "type": "command",
-        "command": "${CLAUDE_PLUGIN_ROOT}/scripts/on-stop.sh"
+        "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/on-stop.mjs\""
       }
     ]
   }

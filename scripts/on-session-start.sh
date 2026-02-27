@@ -4,7 +4,9 @@ EVENT_FILE="$HOME/.claude/claude-garden/events.jsonl"
 PID_FILE="$HOME/.claude/claude-garden/sidecar.pid"
 mkdir -p "$(dirname "$EVENT_FILE")"
 
-SESSION=$(echo "$INPUT" | jq -r '.session_id // "unknown"')
+# Parse session_id without jq (grep + sed)
+SESSION=$(echo "$INPUT" | grep -o '"session_id"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*:.*"\([^"]*\)"/\1/')
+[ -z "$SESSION" ] && SESSION="unknown"
 TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
 # Clear previous events, write session start
@@ -51,13 +53,18 @@ if [ "$SIDECAR_RUNNING" = "false" ]; then
       ;;
     MINGW*|MSYS*|CYGWIN*)
       # Windows (Git Bash / MSYS2 / Cygwin)
-      PLUGIN_DIR_WIN="$(cygpath -w "$PLUGIN_DIR" 2>/dev/null || echo "$PLUGIN_DIR")"
-      if command -v wt.exe &>/dev/null; then
-        # Windows Terminal
-        wt.exe new-tab --title "Claude Garden" -- bash -l -c "$SIDECAR_CMD" &>/dev/null &
-      elif command -v powershell.exe &>/dev/null; then
-        # Fallback: PowerShell spawns a new cmd window
-        powershell.exe -NoProfile -Command "Start-Process cmd -ArgumentList '/c','bash','-l','-c','\"$SIDECAR_CMD\"'" &>/dev/null &
+      # Must use Git Bash's bash.exe (not WSL's) — get Windows-style path
+      BASH_WIN="$(cygpath -w /usr/bin/bash 2>/dev/null)"
+      SIDECAR_CMD_WIN="$(cygpath -w "$SIDECAR_CMD" 2>/dev/null || echo "$SIDECAR_CMD")"
+      if command -v wt.exe &>/dev/null && [ -n "$BASH_WIN" ]; then
+        # Windows Terminal — open new tab with Git Bash
+        wt.exe new-tab --title "Claude Garden" -- "$BASH_WIN" -l -c "$SIDECAR_CMD" &>/dev/null &
+      elif command -v mintty &>/dev/null; then
+        # Git Bash native terminal
+        mintty --title "Claude Garden" -e bash -l -c "$SIDECAR_CMD" &>/dev/null &
+      elif command -v powershell.exe &>/dev/null && [ -n "$BASH_WIN" ]; then
+        # Fallback: PowerShell spawns a new window
+        powershell.exe -NoProfile -Command "Start-Process '$BASH_WIN' -ArgumentList '-l','-c','$SIDECAR_CMD_WIN'" &>/dev/null &
       fi
       ;;
     Linux)
