@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Collect unique Claude variants while coding — idle collection game sidecar for Claude Code",
   "author": {
-    "name": "user"
+    "name": "donkeeman"
   },
-  "homepage": "https://github.com/user/claude-garden"
+  "homepage": "https://github.com/donkeeman/claude-garden"
 }

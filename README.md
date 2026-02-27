@@ -35,7 +35,7 @@ Claude Garden runs as a terminal sidecar alongside Claude Code. Every time Claud
 Or manually clone into `~/.claude/plugins/`:
 
 ```bash
-git clone https://github.com/user/claude-garden ~/.claude/plugins/claude-garden
+git clone https://github.com/donkeeman/claude-garden ~/.claude/plugins/claude-garden
 ```
 
 The sidecar auto-launches in a new terminal tab when a Claude Code session starts. Supported on macOS (Terminal, iTerm2), Windows (Windows Terminal, PowerShell fallback), and Linux (gnome-terminal, xterm, x-terminal-emulator).
