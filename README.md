@@ -28,12 +28,6 @@ Claude Garden runs as a terminal sidecar alongside Claude Code. Every time Claud
 
 ## Installation
 
-```
-/plugin install claude-garden
-```
-
-Or manually clone into `~/.claude/plugins/`:
-
 ```bash
 git clone https://github.com/donkeeman/claude-garden ~/.claude/plugins/claude-garden
 ```
