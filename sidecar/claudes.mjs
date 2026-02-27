@@ -75,7 +75,7 @@ export const ALL_CLAUDES = [
   {
     id: 'thinker', name: 'Thinker', rarity: 1,
     desc: 'Deep in thought...',
-    mini: [' ▐ ▌?', '▐· ?▌', ' ▘ ▝ '],
+    mini: [' ▐ ▌?', '▐· ·▌', ' ▘~▝ '],
     sprite: [
       '             ',
       ' ┏━━━━━━━━━┓?',
@@ -252,7 +252,7 @@ export const ALL_CLAUDES = [
   {
     id: 'ninja', name: 'Ninja', rarity: 3,
     desc: 'Silent but deadly.',
-    mini: [' ▄▄▄ ', '▐- -▌', ' ▚ ▞ '],
+    mini: [' ▄▄▄ ', '▐-@-▌', ' ▚ ▞ '],
     sprite: [
       '             ',
       ' ┏▅▅▅▅▅▅▅▅▅┓<',
@@ -278,12 +278,12 @@ export const ALL_CLAUDES = [
   {
     id: 'astro', name: 'Astro', rarity: 3,
     desc: 'To the stars!',
-    mini: ['(▐ ▌)', '▐@ @▌', ' ▘ ▝ '],
+    mini: ['(▐ ▌)', '▐· ·▌', ' ▘ ▝ '],
     sprite: [
-      '             ',
-      ' ┏━━━━━━━━━┓ ',
+      '    ▁▁▁▁▁    ',
+      ' ┏(━━━━━━━)┓ ',
       '┏┛  ▖   ▗  ┗┓',
-      '┗┓         ┏┛',
+      '┗┓    ▽    ┏┛',
       ' ┗┳┳┳┳━┳┳┳┳┛ ',
       '  ┗┛┗┛ ┗┛┗┛  ',
     ],
@@ -291,7 +291,7 @@ export const ALL_CLAUDES = [
   {
     id: 'samurai', name: 'Samurai', rarity: 3,
     desc: 'The way of code.',
-    mini: ['#▐ ▌#', '▐= =▌', ' ▘ ▝ '],
+    mini: ['━▐ ▌━', '▐= =▌', ' ▘ ▝ '],
     sprite: [
       '  ━━━━━━━━━  ',
       ' ┏━━━━━━━━━┓ ',
@@ -304,7 +304,7 @@ export const ALL_CLAUDES = [
   {
     id: 'ghost', name: 'Ghost', rarity: 3,
     desc: 'Boo! ...can you see me?',
-    mini: [' ▐ ▌ ', '▐o o▌', ' ~~~ '],
+    mini: [' ▐ ▌ ', '▐· ·▌', ' ~~~ '],
     sprite: [
       '             ',
       ' ┏━━━━━━━━━┓ ',
@@ -334,7 +334,7 @@ export const ALL_CLAUDES = [
   {
     id: 'dragon', name: 'Dragon', rarity: 4,
     desc: 'Breathes fire and code.',
-    mini: ['w▐ ▌w', '▐O O▌', ' ▘/▝ '],
+    mini: ['w▐ ▌w', '▐O O▌', ' ▘M▝ '],
     sprite: [
       '   w◢   ◣w   ',
       ' ┏━━━━━━━━━┓ ',
@@ -362,18 +362,18 @@ export const ALL_CLAUDES = [
     desc: 'Rises from every crash.',
     mini: ['~▐ ▌~', '▐^ ^▌', '~▘ ▝~'],
     sprite: [
-      '             ',
+      '  ~╲▁▁▁▁▁╱~  ',
       ' ┏━━━━━━━━━┓ ',
-      '┏┛  @   @  ┗┓',
-      '┗┓         ┏┛',
-      ' ┗┳┳┳┳━┳┳┳┳┛ ',
-      '  ┗┛┗┛ ┗┛┗┛  ',
+      '┏┛  ^   ^  ┗┓',
+      '┗┓    v    ┏┛',
+      '~┗┳┳┳┳━┳┳┳┳┛~',
+      ' ~┗┛┗┛ ┗┛┗┛~ ',
     ],
   },
   {
     id: 'galaxy', name: 'Galaxy', rarity: 4,
     desc: 'Made of stardust.',
-    mini: ['*▐ ▌*', '▐* *▌', '*▘ ▝*'],
+    mini: ['*▐ ▌*', '▐@ @▌', '*▘ ▝*'],
     sprite: [
       '          *  ',
       '*┏━━━━━━━━━┓ ',
@@ -390,20 +390,20 @@ export const ALL_CLAUDES = [
   {
     id: 'opus', name: 'Opus', rarity: 5,
     desc: 'The ultimate form.',
-    mini: ['*▐ ▌*', '{@ @}', '<▘ ▝>'],
+    mini: ['*▐ ▌*', '{◆ ◆}', '<▘ ▝>'],
     sprite: [
-      '             ',
-      ' ┏━━━━━━━━━┓ ',
-      '┏┛  @   @  ┗┓',
-      '┗┓         ┏┛',
-      ' ┗┳┳┳┳━┳┳┳┳┛ ',
-      '  ┗┛┗┛ ┗┛┗┛  ',
+      '  *  ▁▁▁  *  ',
+      '*┏━━━━━━━━━┓*',
+      '┏┛  ◆   ◆  ┗┓',
+      '┗┓    ━    ┏┛',
+      '*┗┳┳┳┳━┳┳┳┳┛*',
+      ' *┗┛┗┛ ┗┛┗┛* ',
     ],
   },
   {
     id: 'rainbow', name: 'Rainbow', rarity: 5,
     desc: 'All colors at once.',
-    mini: ['~▐ ▌~', '▐oOo▌', ' ▘ ▝ '],
+    mini: ['~▐ ▌~', '▐o~o▌', ' ▘ ▝ '],
     sprite: [
       ' ~~ ~~~~~ ~~ ',
       ' ┏━━━━━━━━━┓ ',
