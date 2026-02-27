@@ -1,0 +1,9 @@
+{
+  "name": "claude-garden",
+  "version": "1.0.0",
+  "description": "Collect unique Claude variants while coding — idle collection game sidecar for Claude Code",
+  "author": {
+    "name": "user"
+  },
+  "homepage": "https://github.com/user/claude-garden"
+}
