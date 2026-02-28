@@ -76,7 +76,6 @@ function launchSidecar(pluginDir) {
       execSync(`start "" node "${sidecarEntry}"`, {
         cwd: pluginDir,
         stdio: 'ignore',
-        windowsHide: true,
       });
     } catch {}
   } else if (os === 'darwin') {
