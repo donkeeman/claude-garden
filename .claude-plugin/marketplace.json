@@ -13,7 +13,7 @@
       "author": {
         "name": "donkeeman"
       },
-      "source": ".",
+      "source": "./plugins/claude-garden",
       "category": "productivity",
       "homepage": "https://github.com/donkeeman/claude-garden"
     }

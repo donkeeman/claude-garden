@@ -38,7 +38,12 @@ Claude Garden runs as a terminal sidecar alongside Claude Code. Every time Claud
 ### Manual
 
 ```bash
-git clone https://github.com/donkeeman/claude-garden ~/.claude/plugins/claude-garden
+git clone https://github.com/donkeeman/claude-garden ~/.claude/plugins/marketplaces/donkeeman-claude-garden
+```
+
+Then install the plugin:
+```
+/plugin install claude-garden@donkeeman-claude-garden
 ```
 
 The sidecar auto-launches in a new terminal tab when a Claude Code session starts. Supported on macOS (Terminal, iTerm2), Windows (cmd, PowerShell, Git Bash), and Linux (gnome-terminal, xterm, x-terminal-emulator).
@@ -46,24 +51,28 @@ The sidecar auto-launches in a new terminal tab when a Claude Code session start
 ## Structure
 
 ```
-claude-garden/
+claude-garden/                       # Marketplace root
 ├── .claude-plugin/
-│   ├── plugin.json        # Plugin metadata
-│   └── marketplace.json   # Marketplace metadata
-├── hooks/
-│   └── hooks.json          # Hook event bindings
-├── scripts/
-│   ├── on-session-start.mjs # Starts sidecar + logs session
-│   ├── on-post-tool.mjs     # Logs tool use events
-│   ├── on-post-tool-fail.mjs# Logs tool failures
-│   └── on-stop.mjs          # Logs session end
-├── sidecar/
-│   ├── index.mjs           # Main loop (JSONL watcher + keyboard)
-│   ├── game.mjs            # Game state machine
-│   ├── renderer.mjs        # ANSI terminal renderer
-│   ├── claudes.mjs         # All 29 Claude variant definitions
-│   └── facilities.mjs      # Upgrade system definitions
-└── start.sh                # Sidecar entry point
+│   └── marketplace.json             # Marketplace metadata
+├── plugins/
+│   └── claude-garden/               # Plugin root
+│       ├── .claude-plugin/
+│       │   └── plugin.json          # Plugin metadata
+│       ├── hooks/
+│       │   └── hooks.json           # Hook event bindings
+│       ├── scripts/
+│       │   ├── on-session-start.mjs # Starts sidecar + logs session
+│       │   ├── on-post-tool.mjs     # Logs tool use events
+│       │   ├── on-post-tool-fail.mjs# Logs tool failures
+│       │   └── on-stop.mjs          # Logs session end
+│       ├── sidecar/
+│       │   ├── index.mjs            # Main loop (JSONL watcher + keyboard)
+│       │   ├── game.mjs             # Game state machine
+│       │   ├── renderer.mjs         # ANSI terminal renderer
+│       │   ├── claudes.mjs          # All 29 Claude variant definitions
+│       │   └── facilities.mjs       # Upgrade system definitions
+│       └── start.sh                 # Sidecar entry point
+└── README.md
 ```
 
 ## Requirements
