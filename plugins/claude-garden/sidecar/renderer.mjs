@@ -283,7 +283,12 @@ function renderCollection(game) {
         W,
       ));
     } else {
-      lines.push(box(`${C.dim}\u25B6 ??? (undiscovered)${C.reset}`, W));
+      const hint = cursorCl.hint;
+      if (hint) {
+        lines.push(box(`${C.dim}\u25B6 ??? "${hint}"${C.reset}`, W));
+      } else {
+        lines.push(box(`${C.dim}\u25B6 ??? (undiscovered)${C.reset}`, W));
+      }
     }
   }
 

@@ -426,6 +426,100 @@ export const ALL_CLAUDES = [
       '  \u2517\u251b\u2517\u251b \u2517\u251b\u2517\u251b  ',
     ],
   },
+
+  // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+  // Conditional variants
+  // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+  {
+    id: 'weekend', name: 'Weekend', rarity: 2,
+    desc: 'Working on weekends, huh?',
+    hint: 'Some coders never rest...',
+    condition: 'weekend',
+    mini: ['     ', '\u2590\u00b7 \u00b7\u258c', ' \u2598z\u259d '],
+    sprite: [
+      '             ',
+      ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
+      '\u250f\u251b  \u2596   \u2597  \u2517\u2513',
+      '\u2517\u2513    ~    \u250f\u251b',
+      ' \u2517\u2533\u2533\u2533\u2533\u2501\u2533\u2533\u2533\u2533\u251b ',
+      '  \u2517\u251b\u2517\u251b \u2517\u251b\u2517\u251b  ',
+    ],
+  },
+  {
+    id: 'earlybird', name: 'Early Bird', rarity: 2,
+    desc: 'Up before the compiler!',
+    hint: 'The early coder catches the...',
+    condition: 'earlybird',
+    mini: [' \u266a  ', '\u2590^ ^\u258c', ' \u2598 \u259d '],
+    sprite: [
+      '         \u266a   ',
+      ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
+      '\u250f\u251b  ^   ^  \u2517\u2513',
+      '\u2517\u2513    \u25bd    \u250f\u251b',
+      ' \u2517\u2533\u2533\u2533\u2533\u2501\u2533\u2533\u2533\u2533\u251b ',
+      '  \u2517\u251b\u2517\u251b \u2517\u251b\u2517\u251b  ',
+    ],
+  },
+  {
+    id: 'vampire', name: 'Vampire', rarity: 3,
+    desc: "I don't bite... your code.",
+    hint: 'Only appears when the moon is high...',
+    condition: 'vampire',
+    mini: ['     ', '\u2590\u00b7 \u00b7\u258c', ' \u2596V\u2597 '],
+    sprite: [
+      '             ',
+      ' \u250f\u2585\u2585\u2585\u2585\u2585\u2585\u2585\u2585\u2585\u2513 ',
+      '\u250f\u251b  \u2022   \u2022  \u2517\u2513',
+      '\u2517\u2513   vvv   \u250f\u251b',
+      ' \u2517\u2533\u2533\u2533\u2533\u2501\u2533\u2533\u2533\u2533\u251b ',
+      '  \u2517\u251b\u2517\u251b \u2517\u251b\u2517\u251b  ',
+    ],
+  },
+  {
+    id: 'debugger', name: 'Debugger', rarity: 3,
+    desc: 'printf("here???");',
+    hint: 'Born from repeated frustration.',
+    condition: 'debugger',
+    mini: [' >_  ', '\u2590@ @\u258c', ' \u2598 \u259d '],
+    sprite: [
+      '   >_<       ',
+      ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
+      '\u250f\u251b  @   @  \u2517\u2513',
+      '\u2517\u2513   ___   \u250f\u251b',
+      ' \u2517\u2533\u2533\u2533\u2533\u2501\u2533\u2533\u2533\u2533\u251b ',
+      '  \u2517\u251b\u2517\u251b \u2517\u251b\u2517\u251b  ',
+    ],
+  },
+  {
+    id: 'overworked', name: 'Overworked', rarity: 4,
+    desc: 'You should really take a break...',
+    hint: 'Maybe you should take a break?',
+    condition: 'overworked',
+    mini: ['     ', '\u2590x x\u258c', ' \u2598~\u259d '],
+    sprite: [
+      '    zzz      ',
+      ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
+      '\u250f\u251b  x   x  \u2517\u2513',
+      '\u2517\u2513    ~    \u250f\u251b',
+      ' \u2517\u2533\u2533\u2533\u2533\u2501\u2533\u2533\u2533\u2533\u251b ',
+      '  \u2517\u251b\u2517\u251b \u2517\u251b\u2517\u251b  ',
+    ],
+  },
+  {
+    id: 'lucky', name: 'Lucky', rarity: 5,
+    desc: 'Jackpot! Fortune smiles upon you.',
+    hint: 'Fortune favors the bold.',
+    condition: 'lucky',
+    mini: ['$ $ $', '\u2590$ $\u258c', '$\u2598 \u259d$'],
+    sprite: [
+      '  $  $$$  $  ',
+      '$\u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513$',
+      '\u250f\u251b  $   $  \u2517\u2513',
+      '\u2517\u2513    \u2501    \u250f\u251b',
+      '$\u2517\u2533\u2533\u2533\u2533\u2501\u2533\u2533\u2533\u2533\u251b$',
+      ' $\u2517\u251b\u2517\u251b \u2517\u251b\u2517\u251b$ ',
+    ],
+  },
 ];
 
 // Helper: get Claudes by rarity

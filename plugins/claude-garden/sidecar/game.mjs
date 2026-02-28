@@ -73,11 +73,46 @@ export function createGame(sessionId) {
     screen: 'garden',    // 'garden' | 'collection' | 'upgrades'
     detailClaude: null,  // for collection detail view
     cursor: 0,           // 컬렉션 리스트 커서 위치
+    sessionStart: Date.now(),
+    consecutiveBash: 0,  // consecutive Bash tool calls
+    consecutiveFails: 0, // consecutive tool failures
   };
+}
+
+// Condition checkers — each returns true if the condition is met
+const CONDITIONS = {
+  weekend: () => {
+    const day = new Date().getDay();
+    return day === 0 || day === 6;
+  },
+  earlybird: () => {
+    const h = new Date().getHours();
+    return h >= 5 && h < 8;
+  },
+  vampire: () => {
+    const h = new Date().getHours();
+    return h >= 0 && h < 5;
+  },
+  debugger: (game) => game.consecutiveBash >= 5,
+  overworked: (game) => (Date.now() - game.sessionStart) >= 3 * 60 * 60 * 1000,
+  lucky: (game) => game.persistent.coins >= 777,
+};
+
+export function checkCondition(conditionId, game) {
+  const checker = CONDITIONS[conditionId];
+  return checker ? checker(game) : false;
 }
 
 export function processToolCall(game, toolName) {
   const { persistent } = game;
+
+  // Track consecutive Bash calls for debugger condition
+  if (toolName === 'Bash') {
+    game.consecutiveBash++;
+  } else {
+    game.consecutiveBash = 0;
+  }
+  game.consecutiveFails = 0; // reset on success
 
   // Earn coins
   const coinsPerTool = getFacilityValue('gpu', persistent.facilities.gpu);
@@ -88,7 +123,7 @@ export function processToolCall(game, toolName) {
   // Try to spawn
   const capacity = getFacilityValue('ram', persistent.facilities.ram);
   if (game.garden.length < capacity && Math.random() < SPAWN_CHANCE) {
-    const spawned = rollClaude(persistent);
+    const spawned = rollClaude(persistent, game);
     if (spawned) {
       game.garden.push({ claude: spawned, isNew: true });
       persistent.stats.totalSpawned++;
@@ -107,6 +142,7 @@ export function processToolCall(game, toolName) {
 
 export function processToolFail(game, toolName) {
   const { persistent } = game;
+  game.consecutiveFails++;
 
   // 툴 실패 시 코인 차감
   const penalty = 2 + Math.floor(Math.random() * 4); // -2 ~ -5
@@ -202,7 +238,7 @@ export function finishSession(game) {
   return game;
 }
 
-function rollClaude(persistent) {
+function rollClaude(persistent, game) {
   const maxRarity = getFacilityValue('antenna', persistent.facilities.antenna);
   const coolingMult = getFacilityValue('cooling', persistent.facilities.cooling);
 
@@ -225,8 +261,12 @@ function rollClaude(persistent) {
     if (roll <= 0) { chosenRarity = rarity; break; }
   }
 
-  // Pick random Claude of that rarity
-  const candidates = ALL_CLAUDES.filter(c => c.rarity === chosenRarity);
+  // Build candidate pool: unconditional + conditionals whose condition is met
+  const candidates = ALL_CLAUDES.filter(c => {
+    if (c.rarity !== chosenRarity) return false;
+    if (c.condition) return checkCondition(c.condition, game);
+    return true;
+  });
   if (candidates.length === 0) return null;
   return candidates[Math.floor(Math.random() * candidates.length)];
 }
