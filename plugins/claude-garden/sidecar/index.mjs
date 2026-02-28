@@ -4,12 +4,13 @@
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
+import { homedir } from 'node:os';
 import { createGame, processToolCall, processToolFail, collectAll, upgrade, finishSession, getDiscoveredIds, isDiscovered } from './game.mjs';
 import { render, renderSplash } from './renderer.mjs';
 import { ALL_CLAUDES } from './claudes.mjs';
 import { FACILITY_KEYS } from './facilities.mjs';
 
-const EVENT_DIR = join(process.env.HOME, '.claude', 'claude-garden');
+const EVENT_DIR = join(homedir(), '.claude', 'claude-garden');
 const EVENT_FILE = join(EVENT_DIR, 'events.jsonl');
 const PID_FILE = join(EVENT_DIR, 'sidecar.pid');
 
