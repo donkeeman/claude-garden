@@ -83,7 +83,7 @@ export function createGame(sessionId) {
 const CONDITIONS = {
   nightowl: () => {
     const h = new Date().getHours();
-    return h >= 22 || h < 0;
+    return h >= 22;
   },
   weekend: () => {
     const day = new Date().getDay();

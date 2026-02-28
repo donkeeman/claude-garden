@@ -257,5 +257,5 @@ const interval = setInterval(processNewLines, 200);
 
 // Cleanup handlers
 process.on('SIGINT', () => { clearInterval(interval); cleanup(); process.exit(0); });
-process.on('exit', cleanup);
+process.on('exit', () => { clearInterval(interval); cleanup(); });
 process.on('SIGTERM', () => { cleanup(); process.exit(0); });
