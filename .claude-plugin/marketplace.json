@@ -1,0 +1,21 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "claude-garden",
+  "description": "Idle collection game sidecar for Claude Code — collect unique Claude variants as you code",
+  "owner": {
+    "name": "donkeeman"
+  },
+  "plugins": [
+    {
+      "name": "claude-garden",
+      "description": "Collect unique Claude variants while coding — idle collection game sidecar for Claude Code",
+      "version": "1.0.0",
+      "author": {
+        "name": "donkeeman"
+      },
+      "source": ".",
+      "category": "productivity",
+      "homepage": "https://github.com/donkeeman/claude-garden"
+    }
+  ]
+}

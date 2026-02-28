@@ -28,25 +28,35 @@ Claude Garden runs as a terminal sidecar alongside Claude Code. Every time Claud
 
 ## Installation
 
+### Via marketplace (recommended)
+
+```
+/plugin marketplace add donkeeman/claude-garden
+/plugin install claude-garden@donkeeman-claude-garden
+```
+
+### Manual
+
 ```bash
 git clone https://github.com/donkeeman/claude-garden ~/.claude/plugins/claude-garden
 ```
 
-The sidecar auto-launches in a new terminal tab when a Claude Code session starts. Supported on macOS (Terminal, iTerm2), Windows (Windows Terminal, PowerShell fallback), and Linux (gnome-terminal, xterm, x-terminal-emulator).
+The sidecar auto-launches in a new terminal tab when a Claude Code session starts. Supported on macOS (Terminal, iTerm2), Windows (cmd, PowerShell, Git Bash), and Linux (gnome-terminal, xterm, x-terminal-emulator).
 
 ## Structure
 
 ```
 claude-garden/
 ├── .claude-plugin/
-│   └── plugin.json        # Plugin metadata
+│   ├── plugin.json        # Plugin metadata
+│   └── marketplace.json   # Marketplace metadata
 ├── hooks/
 │   └── hooks.json          # Hook event bindings
 ├── scripts/
-│   ├── on-session-start.sh # Starts sidecar + logs session
-│   ├── on-post-tool.sh     # Logs tool use events
-│   ├── on-post-tool-fail.sh# Logs tool failures
-│   └── on-stop.sh          # Logs session end
+│   ├── on-session-start.mjs # Starts sidecar + logs session
+│   ├── on-post-tool.mjs     # Logs tool use events
+│   ├── on-post-tool-fail.mjs# Logs tool failures
+│   └── on-stop.mjs          # Logs session end
 ├── sidecar/
 │   ├── index.mjs           # Main loop (JSONL watcher + keyboard)
 │   ├── game.mjs            # Game state machine
@@ -58,8 +68,7 @@ claude-garden/
 
 ## Requirements
 
-- Node.js (for sidecar)
-- `jq` (for hook scripts)
+- Node.js (for sidecar and hook scripts)
 - A terminal that supports Unicode box-drawing characters and ANSI colors
 
 ## License
