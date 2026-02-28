@@ -125,70 +125,69 @@ function setupKeyboard() {
     // Arrow keys (escape sequences: \x1b[A/B/C/D)
     if (key === '\x1b[A' || key === '\x1b[B' || key === '\x1b[C' || key === '\x1b[D') {
       if (game.screen === 'collection' && !game.detailClaude) {
-        const total = ALL_CLAUDES.length;
+        // Build display-order list matching renderer (rarity 1-5, no secrets in git ver)
+        const displayOrder = [];
+        for (let r = 1; r <= 5; r++) {
+          displayOrder.push(...ALL_CLAUDES.filter(c => c.rarity === r));
+        }
+
+        const total = displayOrder.length;
         if (total === 0) return;
 
-        // 그리드 공간 이동: perRow는 렌더러와 동일하게 계산
+        // Map cursor from ALL_CLAUDES index to display index
+        const curCl = ALL_CLAUDES[game.cursor];
+        let dispIdx = displayOrder.indexOf(curCl);
+        if (dispIdx < 0) dispIdx = 0;
+
         const W = Math.max(36, Math.min(80, process.stdout.columns || 50));
         const inner = W - 4;
         const cellVis = 6;
         const perRow = Math.max(1, Math.floor(inner / cellVis));
 
-        // ALL_CLAUDES 내에서 현재 레리티 그룹의 로컬 위치 계산
-        const curCl = ALL_CLAUDES[game.cursor];
-        const curRarity = curCl ? curCl.rarity : 1;
-        const rarityGroup = ALL_CLAUDES.filter(c => c.rarity === curRarity);
-        const localIdx = rarityGroup.indexOf(curCl);
+        // Find current rarity group in display order
+        const curRarity = displayOrder[dispIdx]?.rarity || 1;
+        const groupStart = displayOrder.findIndex(c => c.rarity === curRarity);
+        const groupEnd = displayOrder.filter(c => c.rarity === curRarity).length;
+        const localIdx = dispIdx - groupStart;
         const col = localIdx % perRow;
         const row = Math.floor(localIdx / perRow);
 
         if (key === '\x1b[C') {
-          // → 같은 그룹 내 다음
-          game.cursor = Math.min(total - 1, game.cursor + 1);
+          dispIdx = Math.min(total - 1, dispIdx + 1);
         } else if (key === '\x1b[D') {
-          // ← 같은 그룹 내 이전
-          game.cursor = Math.max(0, game.cursor - 1);
+          dispIdx = Math.max(0, dispIdx - 1);
         } else if (key === '\x1b[B') {
-          // ↓ 같은 열 아래 행, 없으면 다음 레리티 그룹 첫 번째
           const nextRow = row + 1;
           const nextLocalIdx = nextRow * perRow + col;
-          if (nextLocalIdx < rarityGroup.length) {
-            // 같은 레리티 내 아래 행
-            game.cursor += perRow;
-            if (game.cursor >= total) game.cursor = total - 1;
+          if (nextLocalIdx < groupEnd) {
+            dispIdx = groupStart + nextLocalIdx;
           } else {
-            // 다음 레리티 그룹 첫 번째로 이동
-            const nextRarity = curRarity + 1;
-            if (nextRarity <= 5) {
-              const nextGroupStart = ALL_CLAUDES.findIndex(c => c.rarity === nextRarity);
-              if (nextGroupStart >= 0) {
-                game.cursor = Math.min(nextGroupStart + Math.min(col, ALL_CLAUDES.filter(c => c.rarity === nextRarity).length - 1), total - 1);
-              }
+            const nextGroupStart = displayOrder.findIndex(c => c.rarity > curRarity);
+            if (nextGroupStart >= 0) {
+              const nextGroup = displayOrder.filter(c => c.rarity === displayOrder[nextGroupStart].rarity);
+              dispIdx = nextGroupStart + Math.min(col, nextGroup.length - 1);
             }
           }
         } else if (key === '\x1b[A') {
-          // ↑ 같은 열 위 행, 없으면 이전 레리티 그룹 마지막 행 같은 열
           const prevRow = row - 1;
           if (prevRow >= 0) {
-            game.cursor -= perRow;
-            if (game.cursor < 0) game.cursor = 0;
+            dispIdx = groupStart + prevRow * perRow + col;
           } else {
-            // 이전 레리티 그룹 마지막 행 같은 열로 이동
-            const prevRarity = curRarity - 1;
-            if (prevRarity >= 1) {
-              const prevGroup = ALL_CLAUDES.filter(c => c.rarity === prevRarity);
-              const prevGroupStart = ALL_CLAUDES.findIndex(c => c.rarity === prevRarity);
-              if (prevGroup.length > 0) {
-                const lastRow = Math.floor((prevGroup.length - 1) / perRow);
-                const targetLocal = lastRow * perRow + Math.min(col, prevGroup.length - 1 - lastRow * perRow);
-                game.cursor = prevGroupStart + targetLocal;
-              }
+            const prevClaudes = displayOrder.filter(c => c.rarity < curRarity);
+            if (prevClaudes.length > 0) {
+              const prevRarity = prevClaudes[prevClaudes.length - 1].rarity;
+              const prevGroup = displayOrder.filter(c => c.rarity === prevRarity);
+              const prevGroupStart = displayOrder.findIndex(c => c.rarity === prevRarity);
+              const lastRow = Math.floor((prevGroup.length - 1) / perRow);
+              const targetLocal = lastRow * perRow + Math.min(col, prevGroup.length - 1 - lastRow * perRow);
+              dispIdx = prevGroupStart + targetLocal;
             }
           }
         }
 
-        // 범위 보정
-        game.cursor = Math.max(0, Math.min(total - 1, game.cursor));
+        dispIdx = Math.max(0, Math.min(total - 1, dispIdx));
+        game.cursor = ALL_CLAUDES.indexOf(displayOrder[dispIdx]);
+        if (game.cursor < 0) game.cursor = 0;
 
         lastRender = '';
         renderFrame();
