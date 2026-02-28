@@ -11,11 +11,7 @@ mkdirSync(dir, { recursive: true });
 const eventsFile = join(dir, 'events.jsonl');
 const pidFile = join(dir, 'sidecar.pid');
 
-// Read stdin
-let input = '';
-process.stdin.setEncoding('utf-8');
-process.stdin.on('data', c => input += c);
-process.stdin.on('end', () => {
+function main(input) {
   let session = 'unknown';
   try {
     const j = JSON.parse(input);
@@ -23,17 +19,31 @@ process.stdin.on('end', () => {
   } catch {}
 
   const ts = new Date().toISOString();
-  // Clear previous events, write session start
   writeFileSync(eventsFile, JSON.stringify({ type: 'session_start', session, ts }) + '\n');
 
-  // Check if sidecar is already running
   if (isSidecarRunning()) return;
 
-  // Launch sidecar in a new terminal
   const __dirname = dirname(fileURLToPath(import.meta.url));
   const pluginDir = join(__dirname, '..');
   launchSidecar(pluginDir);
+}
+
+// Read stdin with timeout fallback — Claude Code may not close stdin promptly
+let input = '';
+let handled = false;
+process.stdin.setEncoding('utf-8');
+process.stdin.on('data', c => input += c);
+process.stdin.on('end', () => {
+  if (handled) return;
+  handled = true;
+  main(input);
 });
+// Fallback: if stdin doesn't close within 500ms, proceed anyway
+setTimeout(() => {
+  if (handled) return;
+  handled = true;
+  main(input);
+}, 500);
 
 function isSidecarRunning() {
   if (!existsSync(pidFile)) return false;
@@ -58,23 +68,17 @@ function launchSidecar(pluginDir) {
   const os = platform();
 
   if (os === 'win32') {
-    // Windows: use start command to open a new console window running node directly
+    // Windows: open a new console window for sidecar
+    // Use execSync with start — it uses cmd.exe shell directly so quotes work correctly
+    // spawn + cmd.exe /c double-escapes quotes, breaking the start command
     const sidecarEntry = join(pluginDir, 'sidecar', 'index.mjs');
     try {
-      // Try Windows Terminal first
-      spawn('cmd.exe', ['/c', 'start', 'Claude Garden', 'node', sidecarEntry], {
-        detached: true,
-        stdio: 'ignore',
+      execSync(`start "" node "${sidecarEntry}"`, {
         cwd: pluginDir,
-      }).unref();
-    } catch {
-      // Fallback
-      spawn('cmd.exe', ['/c', 'start', '', 'node', sidecarEntry], {
-        detached: true,
         stdio: 'ignore',
-        cwd: pluginDir,
-      }).unref();
-    }
+        windowsHide: true,
+      });
+    } catch {}
   } else if (os === 'darwin') {
     // macOS
     const cmd = `bash -l -c '${startScript}'`;
