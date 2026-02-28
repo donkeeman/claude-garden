@@ -81,6 +81,10 @@ export function createGame(sessionId) {
 
 // Condition checkers — each returns true if the condition is met
 const CONDITIONS = {
+  nightowl: () => {
+    const h = new Date().getHours();
+    return h >= 22 || h < 0;
+  },
   weekend: () => {
     const day = new Date().getDay();
     return day === 0 || day === 6;

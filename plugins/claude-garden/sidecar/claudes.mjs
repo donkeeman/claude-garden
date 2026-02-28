@@ -431,6 +431,21 @@ export const ALL_CLAUDES = [
   // Conditional variants
   // \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
   {
+    id: 'nightowl', name: 'Night Owl', rarity: 1,
+    desc: 'Who codes at this hour?',
+    hint: 'Not everyone sleeps at night...',
+    condition: 'nightowl',
+    mini: ['     ', '\u2590\u00b0 \u00b0\u258c', ' \u2598 \u259d '],
+    sprite: [
+      '          *  ',
+      ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
+      '\u250f\u251b  \u00b0   \u00b0  \u2517\u2513',
+      '\u2517\u2513    o    \u250f\u251b',
+      ' \u2517\u2533\u2533\u2533\u2533\u2501\u2533\u2533\u2533\u2533\u251b ',
+      '  \u2517\u251b\u2517\u251b \u2517\u251b\u2517\u251b  ',
+    ],
+  },
+  {
     id: 'weekend', name: 'Weekend', rarity: 2,
     desc: 'Working on weekends, huh?',
     hint: 'Some coders never rest...',
