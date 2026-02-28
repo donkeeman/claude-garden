@@ -2,6 +2,7 @@
 
 import { ALL_CLAUDES, RARITY_STARS, DUP_BONUS } from './claudes.mjs';
 import { FACILITIES, FACILITY_KEYS, getFacilityValue, getUpgradeCost } from './facilities.mjs';
+import { checkAchievements, getAchievement } from './achievements.mjs';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -33,6 +34,7 @@ function migrateState(state) {
     }
     state.collection = migrated;
   }
+  if (!state.achievements) state.achievements = [];
   return state;
 }
 
@@ -43,6 +45,7 @@ function createDefaultState() {
     facilities: { gpu: 1, ram: 1, cooling: 1, antenna: 1 },
     collection: {},  // { [claudeId]: { count: number, firstSeen: 'YYYY-MM-DD' } }
     stats: { totalCollected: 0, totalSpawned: 0, sessionsPlayed: 0 },
+    achievements: [],
   };
 }
 
@@ -65,18 +68,22 @@ export function createGame(sessionId) {
   persistent.stats.sessionsPlayed++;
   saveState(persistent);
 
-  return {
+  const game = {
     sessionId,
     persistent,
     garden: [],          // { claude, isNew } — Claudes currently in garden
     actionLog: [],       // recent action messages
-    screen: 'garden',    // 'garden' | 'collection' | 'upgrades'
+    screen: 'garden',    // 'garden' | 'collection' | 'upgrades' | 'achievements'
     detailClaude: null,  // for collection detail view
     cursor: 0,           // 컬렉션 리스트 커서 위치
+    achievementScroll: 0,
     sessionStart: Date.now(),
     consecutiveBash: 0,  // consecutive Bash tool calls
     consecutiveFails: 0, // consecutive tool failures
   };
+
+  checkAndNotifyAchievements(game);
+  return game;
 }
 
 // Condition checkers — each returns true if the condition is met
@@ -101,6 +108,25 @@ const CONDITIONS = {
   overworked: (game) => (Date.now() - game.sessionStart) >= 3 * 60 * 60 * 1000,
   lucky: (game) => game.persistent.coins >= 777,
 };
+
+function checkAndNotifyAchievements(game) {
+  const { persistent } = game;
+  // Temporarily attach capacity for garden_full check
+  game._capacity = getFacilityValue('ram', persistent.facilities.ram);
+  const newUnlocks = checkAchievements(persistent, game);
+  delete game._capacity;
+
+  for (const id of newUnlocks) {
+    persistent.achievements.push(id);
+    const ach = getAchievement(id);
+    if (ach) {
+      game.actionLog.push(`Achievement: ${ach.icon} ${ach.name}`);
+    }
+  }
+  if (newUnlocks.length > 0) {
+    saveState(persistent);
+  }
+}
 
 export function checkCondition(conditionId, game) {
   const checker = CONDITIONS[conditionId];
@@ -141,6 +167,7 @@ export function processToolCall(game, toolName) {
   }
 
   saveState(persistent);
+  checkAndNotifyAchievements(game);
   return game;
 }
 
@@ -160,6 +187,7 @@ export function processToolFail(game, toolName) {
   }
 
   saveState(persistent);
+  checkAndNotifyAchievements(game);
   return game;
 }
 
@@ -199,6 +227,7 @@ export function collectAll(game) {
   game.actionLog.push(msg);
 
   saveState(persistent);
+  checkAndNotifyAchievements(game);
   return game;
 }
 
@@ -230,6 +259,7 @@ export function upgrade(game, facilityKey) {
   game.actionLog.push(`${fac.name} -> Lv.${newLv}! (${fac.desc}: ${valStr})`);
 
   saveState(persistent);
+  checkAndNotifyAchievements(game);
   return game;
 }
 

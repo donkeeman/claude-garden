@@ -9,6 +9,7 @@ import { createGame, processToolCall, processToolFail, collectAll, upgrade, fini
 import { render, renderSplash } from './renderer.mjs';
 import { ALL_CLAUDES } from './claudes.mjs';
 import { FACILITY_KEYS } from './facilities.mjs';
+import { getVisibleAchievements, CATEGORIES } from './achievements.mjs';
 
 const EVENT_DIR = join(homedir(), '.claude', 'claude-garden');
 const EVENT_FILE = join(EVENT_DIR, 'events.jsonl');
@@ -17,7 +18,7 @@ const PID_FILE = join(EVENT_DIR, 'sidecar.pid');
 if (!existsSync(EVENT_DIR)) mkdirSync(EVENT_DIR, { recursive: true });
 writeFileSync(PID_FILE, String(process.pid));
 
-const SCREENS = ['garden', 'collection', 'upgrades'];
+const SCREENS = ['garden', 'collection', 'upgrades', 'achievements'];
 let game = null;
 let lastLineCount = 0;
 let lastRender = '';
@@ -124,6 +125,26 @@ function setupKeyboard() {
 
     // Arrow keys (escape sequences: \x1b[A/B/C/D)
     if (key === '\x1b[A' || key === '\x1b[B' || key === '\x1b[C' || key === '\x1b[D') {
+      if (game.screen === 'achievements') {
+        // Calculate total display rows for scroll max
+        const visible = getVisibleAchievements();
+        const catOrder = Object.keys(CATEGORIES);
+        let totalRows = 0;
+        for (const catId of catOrder) {
+          const achs = visible.filter(a => a.category === catId);
+          if (achs.length > 0) totalRows += 1 + achs.length; // header + items
+        }
+        const maxScroll = Math.max(0, totalRows - 14);
+
+        if (key === '\x1b[A') {
+          game.achievementScroll = Math.max(0, (game.achievementScroll || 0) - 1);
+        } else if (key === '\x1b[B') {
+          game.achievementScroll = Math.min(maxScroll, (game.achievementScroll || 0) + 1);
+        }
+        lastRender = '';
+        renderFrame();
+        return;
+      }
       if (game.screen === 'collection' && !game.detailClaude) {
         // Build display-order list matching renderer (rarity 1-5, no secrets in git ver)
         const displayOrder = [];

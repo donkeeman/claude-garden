@@ -6,6 +6,7 @@ import {
 } from './claudes.mjs';
 import { FACILITIES, FACILITY_KEYS, getFacilityValue, getUpgradeCost } from './facilities.mjs';
 import { getDiscoveredIds, isDiscovered } from './game.mjs';
+import { ACHIEVEMENTS, CATEGORIES, getVisibleAchievements } from './achievements.mjs';
 
 // ANSI escape codes
 const C = {
@@ -139,7 +140,9 @@ function renderGarden(game) {
   for (const log of recentLogs) {
     const t = trunc(log, inner - 2);
     let colored;
-    if (log.includes('appeared'))
+    if (log.startsWith('Achievement:'))
+      colored = `${C.yellow}${C.bold}> ${t}${C.reset}`;
+    else if (log.includes('appeared'))
       colored = `${C.green}${C.bold}> ${t}${C.reset}`;
     else if (log.includes('NEW'))
       colored = `${C.yellow}${C.bold}> ${t}${C.reset}`;
@@ -350,6 +353,78 @@ function renderUpgrades(game) {
 }
 
 // ═══════════════════════════════════════════════════
+// ACHIEVEMENTS VIEW
+// ═══════════════════════════════════════════════════
+function renderAchievements(game) {
+  const W = getWidth();
+  const inner = W - 4;
+  const lines = [];
+  const { persistent } = game;
+  const unlocked = persistent.achievements || [];
+  const visible = getVisibleAchievements();
+  const total = visible.length;
+  const doneCount = visible.filter(a => unlocked.includes(a.id)).length;
+
+  lines.push(topB(W));
+  lines.push(box(centerIn(`${C.orange}${C.bold}Achievements${C.reset}  ${C.dim}${doneCount}/${total}${C.reset}`, inner), W));
+  lines.push(midB(W));
+
+  // Build display rows grouped by category
+  const displayRows = [];
+  const catOrder = Object.keys(CATEGORIES);
+  for (const catId of catOrder) {
+    const cat = CATEGORIES[catId];
+    const achs = visible.filter(a => a.category === catId);
+    if (achs.length === 0) continue;
+
+    const catDone = achs.filter(a => unlocked.includes(a.id)).length;
+    displayRows.push({ type: 'header', text: `${cat.name} (${catDone}/${achs.length})` });
+    for (const ach of achs) {
+      const done = unlocked.includes(ach.id);
+      displayRows.push({ type: 'achievement', ach, done });
+    }
+  }
+
+  // Scrolling
+  const maxVisible = 14;
+  const scroll = game.achievementScroll || 0;
+  const visibleRows = displayRows.slice(scroll, scroll + maxVisible);
+
+  if (scroll > 0) {
+    lines.push(box(`${C.dim}  ▲ more above${C.reset}`, W));
+  } else {
+    lines.push(emptyBox(W));
+  }
+
+  for (const row of visibleRows) {
+    if (row.type === 'header') {
+      lines.push(box(`${C.cyan}${C.bold}── ${row.text} ──${C.reset}`, W));
+    } else {
+      const { ach, done } = row;
+      if (done) {
+        lines.push(box(`  ${C.green}${C.bold}${ach.icon}${C.reset} ${C.bold}${ach.name}${C.reset}`, W));
+      } else {
+        lines.push(box(`  ${C.dim}${ach.icon} ${ach.name}${C.reset}`, W));
+      }
+    }
+  }
+
+  if (scroll + maxVisible < displayRows.length) {
+    lines.push(box(`${C.dim}  ▼ more below${C.reset}`, W));
+  } else {
+    lines.push(emptyBox(W));
+  }
+
+  while (lines.length < 20) lines.push(emptyBox(W));
+
+  lines.push(midB(W));
+  lines.push(box(`${C.dim}[↑↓] Scroll [Esc] Back [Tab] Next${C.reset}`, W));
+  lines.push(botB(W));
+
+  return lines.join('\n');
+}
+
+// ═══════════════════════════════════════════════════
 // SPLASH SCREEN — official mascot
 // ═══════════════════════════════════════════════════
 export function renderSplash() {
@@ -393,6 +468,7 @@ export function render(game) {
   switch (game.screen) {
     case 'collection': return renderCollection(game);
     case 'upgrades': return renderUpgrades(game);
+    case 'achievements': return renderAchievements(game);
     default: return renderGarden(game);
   }
 }
