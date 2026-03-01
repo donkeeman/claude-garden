@@ -33,9 +33,38 @@ function strip(str) {
   return str.replace(/\x1b\[[0-9;]*m/g, '');
 }
 
+// Terminal display width: CJK / fullwidth / special chars = 2 columns, others = 1
+function visWidth(str) {
+  const s = strip(str);
+  let w = 0;
+  for (const ch of s) {
+    const cp = ch.codePointAt(0);
+    // CJK, Hangul, Fullwidth, and misc symbols rendered as 2-column in terminals
+    if (
+      (cp >= 0x1100 && cp <= 0x115F) ||   // Hangul Jamo
+      (cp === 0x2661) ||                   // ♡ (renders 2-col on Windows Terminal)
+      (cp >= 0x2E80 && cp <= 0x303E) ||   // CJK Radicals + misc
+      (cp >= 0x3040 && cp <= 0x33BF) ||   // Hiragana, Katakana, CJK compat
+      (cp >= 0x3400 && cp <= 0x4DBF) ||   // CJK Ext A
+      (cp >= 0x4E00 && cp <= 0x9FFF) ||   // CJK Unified Ideographs
+      (cp >= 0xAC00 && cp <= 0xD7AF) ||   // Hangul Syllables
+      (cp >= 0xF900 && cp <= 0xFAFF) ||   // CJK Compat Ideographs
+      (cp >= 0xFE30 && cp <= 0xFE6F) ||   // CJK Compat Forms
+      (cp >= 0xFF01 && cp <= 0xFF60) ||   // Fullwidth Forms
+      (cp >= 0xFFE0 && cp <= 0xFFE6) ||   // Fullwidth Signs
+      (cp >= 0x20000 && cp <= 0x2FA1F)    // CJK Ext B-F + Compat Supplement
+    ) {
+      w += 2;
+    } else {
+      w += 1;
+    }
+  }
+  return w;
+}
+
 function box(content, W) {
   const inner = W - 4;
-  const visLen = strip(content).length;
+  const visLen = visWidth(content);
   const pad = Math.max(0, inner - visLen);
   return `${C.orange}\u2551${C.reset} ${content}${' '.repeat(pad)} ${C.orange}\u2551${C.reset}`;
 }
@@ -43,14 +72,14 @@ function box(content, W) {
 function emptyBox(W) { return box('', W); }
 
 function centerIn(text, width) {
-  const vis = strip(text).length;
+  const vis = visWidth(text);
   if (vis >= width) return text;
   const left = Math.floor((width - vis) / 2);
   return ' '.repeat(left) + text;
 }
 
 function padCenter(str, cellW) {
-  const vis = strip(str).length;
+  const vis = visWidth(str);
   if (vis >= cellW) return str;
   const left = Math.floor((cellW - vis) / 2);
   const right = cellW - vis - left;
@@ -62,8 +91,30 @@ function midB(W) { return `${C.orange}\u2560${'\u2550'.repeat(W - 2)}\u2563${C.r
 function botB(W) { return `${C.orange}\u255A${'\u2550'.repeat(W - 2)}\u255D${C.reset}`; }
 
 function trunc(text, max) {
-  if (text.length <= max) return text;
-  return text.slice(0, max - 1) + '\u2026';
+  if (visWidth(text) <= max) return text;
+  let w = 0;
+  let i = 0;
+  for (const ch of text) {
+    const cp = ch.codePointAt(0);
+    const cw = (
+      (cp >= 0x1100 && cp <= 0x115F) ||
+      (cp === 0x2661) ||
+      (cp >= 0x2E80 && cp <= 0x303E) ||
+      (cp >= 0x3040 && cp <= 0x33BF) ||
+      (cp >= 0x3400 && cp <= 0x4DBF) ||
+      (cp >= 0x4E00 && cp <= 0x9FFF) ||
+      (cp >= 0xAC00 && cp <= 0xD7AF) ||
+      (cp >= 0xF900 && cp <= 0xFAFF) ||
+      (cp >= 0xFE30 && cp <= 0xFE6F) ||
+      (cp >= 0xFF01 && cp <= 0xFF60) ||
+      (cp >= 0xFFE0 && cp <= 0xFFE6) ||
+      (cp >= 0x20000 && cp <= 0x2FA1F)
+    ) ? 2 : 1;
+    if (w + cw > max - 1) break;
+    w += cw;
+    i += ch.length;
+  }
+  return text.slice(0, i) + '\u2026';
 }
 
 // ═══════════════════════════════════════════════════
