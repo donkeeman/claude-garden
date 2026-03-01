@@ -157,7 +157,7 @@ export const ALL_CLAUDES = [
   {
     id: 'pirate', name: 'Pirate', rarity: 2,
     desc: "Arr! Where's me code?",
-    mini: [' \u2581\u2580\u2580\u2581', '\u2590\u00b7 x\u258C', ' \u2598 \u259d '],
+    mini: ['\u2581\u2580\u2580\u2580\u2581', '\u2590\u00b7 x\u258C', ' \u2598 \u259d '],
     sprite: [
       '   \u2581\u259f\u2588\u2588\u2588\u2599\u2581   ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -265,7 +265,7 @@ export const ALL_CLAUDES = [
   {
     id: 'wizard', name: 'Wizard', rarity: 3,
     desc: 'Casting code spells!',
-    mini: ['\u2581\u259f\u2599\u2581 ', '\u2590* *\u258C', ' \u2598 \u259d '],
+    mini: [' \u2581\u259f\u2599\u2581', '\u2590* *\u258C', ' \u2598 \u259d '],
     sprite: [
       '     \u2581\u259f\u2599\u2581    ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',

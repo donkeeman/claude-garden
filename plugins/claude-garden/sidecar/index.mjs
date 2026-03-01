@@ -92,7 +92,10 @@ function processNewLines() {
       startIdleTimer();
     }
 
-    if (!game) game = createGame(event.session || 'unknown');
+    if (!game) {
+      game = createGame(event.session || 'unknown');
+      startIdleTimer();
+    }
 
     if (event.type === 'post_tool') {
       game = processToolCall(game, event.tool || 'unknown');
