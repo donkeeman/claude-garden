@@ -432,13 +432,12 @@ export function renderSplash() {
   const inner = W - 4;
   const lines = [];
 
-  // Big mascot for splash (Unicode block chars, 9 chars wide)
+  // Big mascot for splash (Unicode block chars, 7 chars wide)
   const mascot = [
-    `${C.orange}   \u2590 \u258C   ${C.reset}`,
     `${C.orange}  \u259B\u2588\u2588\u2588\u259C  ${C.reset}`,
-    `${C.orange} \u2590\u2588   \u2588\u258C ${C.reset}`,
-    `${C.orange} \u2590\u2588\u00B7 \u00B7\u2588\u258C ${C.reset}`,
-    `${C.orange} \u2590\u2588   \u2588\u258C ${C.reset}`,
+    `${C.orange}  \u2588   \u2588  ${C.reset}`,
+    `${C.orange}  \u2588\u00B7 \u00B7\u2588  ${C.reset}`,
+    `${C.orange}  \u2588   \u2588  ${C.reset}`,
     `${C.orange}  \u2599\u2588 \u2588\u259F  ${C.reset}`,
     `${C.orange}   \u2598 \u259D   ${C.reset}`,
   ];

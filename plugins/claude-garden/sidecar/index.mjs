@@ -5,7 +5,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
-import { createGame, processToolCall, processToolFail, collectAll, upgrade, finishSession, getDiscoveredIds, isDiscovered } from './game.mjs';
+import { createGame, processToolCall, processToolFail, collectAll, upgrade, finishSession, idleSpawn, getDiscoveredIds, isDiscovered } from './game.mjs';
 import { render, renderSplash } from './renderer.mjs';
 import { ALL_CLAUDES } from './claudes.mjs';
 import { FACILITY_KEYS } from './facilities.mjs';
@@ -22,6 +22,32 @@ const SCREENS = ['garden', 'collection', 'upgrades', 'achievements'];
 let game = null;
 let lastLineCount = 0;
 let lastRender = '';
+let idleTimer = null;
+
+function startIdleTimer() {
+  stopIdleTimer();
+  function scheduleNext() {
+    const delay = 15000 + Math.floor(Math.random() * 45000); // 15~60s
+    idleTimer = setTimeout(() => {
+      if (game) {
+        const spawned = idleSpawn(game);
+        if (spawned) {
+          lastRender = '';
+          renderFrame();
+        }
+      }
+      scheduleNext();
+    }, delay);
+  }
+  scheduleNext();
+}
+
+function stopIdleTimer() {
+  if (idleTimer) {
+    clearTimeout(idleTimer);
+    idleTimer = null;
+  }
+}
 
 function clearScreen() {
   process.stdout.write('\x1b[2J\x1b[H');
@@ -63,6 +89,7 @@ function processNewLines() {
     if (event.type === 'session_start') {
       game = createGame(event.session);
       game.actionLog.push("Session started! Let's grow some Claudes!");
+      startIdleTimer();
     }
 
     if (!game) game = createGame(event.session || 'unknown');
@@ -72,6 +99,7 @@ function processNewLines() {
     } else if (event.type === 'post_tool_fail') {
       game = processToolFail(game, event.tool || 'unknown');
     } else if (event.type === 'stop') {
+      stopIdleTimer();
       game = finishSession(game);
     }
 
@@ -254,6 +282,7 @@ function setupKeyboard() {
 
 // ─── Cleanup ───
 function cleanup() {
+  stopIdleTimer();
   try { unlinkSync(PID_FILE); } catch {}
 }
 

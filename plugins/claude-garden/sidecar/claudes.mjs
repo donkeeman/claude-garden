@@ -36,7 +36,7 @@ export const ALL_CLAUDES = [
   {
     id: 'normal', name: 'Normal', rarity: 1,
     desc: 'Just your everyday Claude.',
-    mini: ['     ', ' \u00b7 \u00b7 ', ' \u2598 \u259d '],
+    mini: [' \u2500\u2500\u2500 ', ' \u00b7 \u00b7 ', ' \u2598 \u259d '],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -62,7 +62,7 @@ export const ALL_CLAUDES = [
   {
     id: 'happy', name: 'Happy', rarity: 1,
     desc: 'Having a great day!',
-    mini: ['     ', ' ^ ^ ', ' \u2598 \u259d '],
+    mini: [' \u2500\u2500\u2500 ', ' ^ ^ ', ' \u2598 \u259d '],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -88,7 +88,7 @@ export const ALL_CLAUDES = [
   {
     id: 'shy', name: 'Shy', rarity: 1,
     desc: "D-don't look at me!",
-    mini: ['     ', ' >.< ', ' \u2598.\u259d '],
+    mini: [' \u2500\u2500\u2500 ', ' >.< ', ' \u2598.\u259d '],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -101,7 +101,7 @@ export const ALL_CLAUDES = [
   {
     id: 'wink', name: 'Wink', rarity: 1,
     desc: '*wink*',
-    mini: ['     ', ' ~ \u00b7 ', ' \u2598 \u259d '],
+    mini: [' \u2500\u2500\u2500 ', ' ~ \u00b7 ', ' \u2598 \u259d '],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -127,7 +127,7 @@ export const ALL_CLAUDES = [
   {
     id: 'chill', name: 'Chill', rarity: 1,
     desc: 'No worries, mate.',
-    mini: ['     ', ' - \u00b7 ', ' \u2598  \u259d'],
+    mini: [' \u2500\u2500\u2500 ', ' - \u00b7 ', ' \u2598  \u259d'],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -196,7 +196,7 @@ export const ALL_CLAUDES = [
   {
     id: 'nerd', name: 'Nerd', rarity: 2,
     desc: "Well, actually...",
-    mini: ['     ', ' # # ', ' \u2598 \u259d '],
+    mini: [' \u2500\u2500\u2500 ', ' # # ', ' \u2598 \u259d '],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -209,7 +209,7 @@ export const ALL_CLAUDES = [
   {
     id: 'grumpy', name: 'Grumpy', rarity: 2,
     desc: 'Everything is broken.',
-    mini: ['     ', ' > < ', ' \u2598_\u259d '],
+    mini: [' \u2500\u2500\u2500 ', ' > < ', ' \u2598_\u259d '],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -235,7 +235,7 @@ export const ALL_CLAUDES = [
   {
     id: 'zombie', name: 'Zombie', rarity: 2,
     desc: 'Undead and coding...',
-    mini: ['     ', ' x x ', ' \u2596 \u2597 '],
+    mini: [' \u2500\u2500\u2500 ', ' x x ', ' \u2596 \u2597 '],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501#\u2501\u2513 ',
@@ -317,7 +317,7 @@ export const ALL_CLAUDES = [
   {
     id: 'pixel', name: 'Pixel', rarity: 3,
     desc: '8-bit vibes.',
-    mini: ['     ', '\u2588\u2588 \u2588\u2588', ' \u2588 \u2588 '],
+    mini: [' \u2500\u2500\u2500 ', '\u2588\u2588 \u2588\u2588', ' \u2588 \u2588 '],
     sprite: [
       '  \u2588\u2588     \u2588\u2588  ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -435,7 +435,7 @@ export const ALL_CLAUDES = [
     desc: 'Who codes at this hour?',
     hint: 'Not everyone sleeps at night...',
     condition: 'nightowl',
-    mini: ['     ', ' \u00b0 \u00b0 ', ' \u2598 \u259d '],
+    mini: [' \u2500\u2500\u2500 ', ' \u00b0 \u00b0 ', ' \u2598 \u259d '],
     sprite: [
       '          *  ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -450,7 +450,7 @@ export const ALL_CLAUDES = [
     desc: 'Working on weekends, huh?',
     hint: 'Some coders never rest...',
     condition: 'weekend',
-    mini: ['     ', ' \u00b7 \u00b7 ', ' \u2598z\u259d '],
+    mini: [' \u2500\u2500\u2500 ', ' \u00b7 \u00b7 ', ' \u2598z\u259d '],
     sprite: [
       '             ',
       ' \u250f\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2513 ',
@@ -480,7 +480,7 @@ export const ALL_CLAUDES = [
     desc: "I don't bite... your code.",
     hint: 'Only appears when the moon is high...',
     condition: 'vampire',
-    mini: ['     ', ' \u00b7 \u00b7 ', ' \u2596V\u2597 '],
+    mini: [' \u2500\u2500\u2500 ', ' \u00b7 \u00b7 ', ' \u2596V\u2597 '],
     sprite: [
       '             ',
       ' \u250f\u2585\u2585\u2585\u2585\u2585\u2585\u2585\u2585\u2585\u2513 ',

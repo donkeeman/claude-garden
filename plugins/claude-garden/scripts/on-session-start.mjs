@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
+import { mkdirSync, writeFileSync, readFileSync, existsSync, statSync, openSync, closeSync, unlinkSync, constants } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { homedir, platform } from 'node:os';
 import { execSync, spawn } from 'node:child_process';
@@ -10,6 +10,7 @@ mkdirSync(dir, { recursive: true });
 
 const eventsFile = join(dir, 'events.jsonl');
 const pidFile = join(dir, 'sidecar.pid');
+const lockFile = join(dir, 'sidecar.lock');
 
 function main(input) {
   let session = 'unknown';
@@ -23,9 +24,40 @@ function main(input) {
 
   if (isSidecarRunning()) return;
 
-  const __dirname = dirname(fileURLToPath(import.meta.url));
-  const pluginDir = join(__dirname, '..');
-  launchSidecar(pluginDir);
+  // Atomic lock: O_CREAT|O_EXCL fails if file already exists,
+  // preventing two concurrent hook processes from both launching.
+  if (!acquireLock()) return;
+
+  try {
+    writeFileSync(pidFile, 'launching');
+    const __dirname = dirname(fileURLToPath(import.meta.url));
+    const pluginDir = join(__dirname, '..');
+    launchSidecar(pluginDir);
+  } finally {
+    releaseLock();
+  }
+}
+
+function acquireLock() {
+  // Clean stale locks (>10s old)
+  if (existsSync(lockFile)) {
+    try {
+      const age = Date.now() - statSync(lockFile).mtimeMs;
+      if (age > 10000) unlinkSync(lockFile);
+      else return false;
+    } catch { /* deleted between check and stat */ }
+  }
+  try {
+    const fd = openSync(lockFile, constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY);
+    closeSync(fd);
+    return true;
+  } catch {
+    return false; // another process got it first
+  }
+}
+
+function releaseLock() {
+  try { unlinkSync(lockFile); } catch {}
 }
 
 // Read stdin with timeout fallback — Claude Code may not close stdin promptly
@@ -49,6 +81,15 @@ function isSidecarRunning() {
   if (!existsSync(pidFile)) return false;
   const pid = readFileSync(pidFile, 'utf-8').trim();
   if (!pid) return false;
+
+  // Placeholder written by a concurrent launch — treat as running
+  // But if stale (>10s), the previous launch likely crashed before writing real PID
+  if (pid === 'launching') {
+    try {
+      const age = Date.now() - statSync(pidFile).mtimeMs;
+      return age < 10000;
+    } catch { return false; }
+  }
 
   try {
     if (platform() === 'win32') {

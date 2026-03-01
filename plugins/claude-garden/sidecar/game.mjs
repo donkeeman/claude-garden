@@ -155,10 +155,10 @@ export function processToolCall(game, toolName) {
   if (game.garden.length < capacity && Math.random() < SPAWN_CHANCE) {
     const spawned = rollClaude(persistent, game);
     if (spawned) {
-      game.garden.push({ claude: spawned, isNew: true });
+      const isNew = !isDiscovered(persistent.collection, spawned.id);
+      game.garden.push({ claude: spawned, isNew });
       persistent.stats.totalSpawned++;
       const stars = RARITY_STARS[spawned.rarity];
-      const isNew = !isDiscovered(persistent.collection, spawned.id);
       const newTag = isNew ? ' [NEW!]' : '';
       game.actionLog.push(`${stars} ${spawned.name} Claude appeared!${newTag}`);
     }
@@ -270,6 +270,29 @@ export function finishSession(game) {
   }
   saveState(game.persistent);
   return game;
+}
+
+const IDLE_SPAWN_CHANCE = 0.4;
+
+export function idleSpawn(game) {
+  const { persistent } = game;
+  const capacity = getFacilityValue('ram', persistent.facilities.ram);
+  if (game.garden.length >= capacity) return false;
+  if (Math.random() >= IDLE_SPAWN_CHANCE) return false;
+
+  const spawned = rollClaude(persistent, game);
+  if (!spawned) return false;
+
+  const isNew = !isDiscovered(persistent.collection, spawned.id);
+  game.garden.push({ claude: spawned, isNew });
+  persistent.stats.totalSpawned++;
+  const stars = RARITY_STARS[spawned.rarity];
+  const newTag = isNew ? ' [NEW!]' : '';
+  game.actionLog.push(`${stars} ${spawned.name} Claude wandered in!${newTag}`);
+
+  saveState(persistent);
+  checkAndNotifyAchievements(game);
+  return true;
 }
 
 function rollClaude(persistent, game) {
