@@ -120,12 +120,11 @@ function launchSidecar(pluginDir) {
       });
     } catch {}
   } else if (os === 'darwin') {
-    // macOS
-    const cmd = `bash -l -c '${startScript}'`;
+    // macOS: use .command file so it opens in user's default terminal app
+    const cmdFile = join(dir, 'sidecar-launch.command');
+    writeFileSync(cmdFile, `#!/bin/bash\nbash -l -c '${startScript}'\nrm -f "${cmdFile}"\n`, { mode: 0o755 });
     try {
-      spawn('osascript', ['-e', `tell application "Terminal" to do script "${cmd}"`], {
-        detached: true, stdio: 'ignore',
-      }).unref();
+      spawn('open', [cmdFile], { detached: true, stdio: 'ignore' }).unref();
     } catch {}
   } else {
     // Linux
