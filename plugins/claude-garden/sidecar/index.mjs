@@ -5,7 +5,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
-import { createGame, processToolCall, processToolFail, collectAll, upgrade, finishSession, idleSpawn, getDiscoveredIds, isDiscovered } from './game.mjs';
+import { createGame, processToolCall, processToolFail, collectAll, upgrade, finishSession, idleSpawn, gachaRoll, getDiscoveredIds, isDiscovered } from './game.mjs';
 import { render, renderSplash } from './renderer.mjs';
 import { ALL_CLAUDES } from './claudes.mjs';
 import { FACILITY_KEYS } from './facilities.mjs';
@@ -18,7 +18,7 @@ const PID_FILE = join(EVENT_DIR, 'sidecar.pid');
 if (!existsSync(EVENT_DIR)) mkdirSync(EVENT_DIR, { recursive: true });
 writeFileSync(PID_FILE, String(process.pid));
 
-const SCREENS = ['garden', 'collection', 'upgrades', 'achievements'];
+const SCREENS = ['garden', 'collection', 'upgrades', 'gacha', 'achievements'];
 let game = null;
 let lastLineCount = 0;
 let lastRender = '';
@@ -272,10 +272,30 @@ function setupKeyboard() {
       return;
     }
 
-    // 1-4 → upgrade facility
+    // 1-4 → upgrade facility or gacha 1x
     if (key >= '1' && key <= '4') {
-      const idx = parseInt(key) - 1;
-      game = upgrade(game, FACILITY_KEYS[idx]);
+      if (game.screen === 'gacha' && key === '1') {
+        game = gachaRoll(game, 1);
+      } else {
+        const idx = parseInt(key) - 1;
+        game = upgrade(game, FACILITY_KEYS[idx]);
+      }
+      lastRender = '';
+      renderFrame();
+      return;
+    }
+
+    // 0 → 10x gacha roll
+    if (key === '0' && game.screen === 'gacha') {
+      game = gachaRoll(game, 10);
+      lastRender = '';
+      renderFrame();
+      return;
+    }
+
+    // M → max gacha roll
+    if ((key === 'm' || key === 'M') && game.screen === 'gacha') {
+      game = gachaRoll(game, 'max');
       lastRender = '';
       renderFrame();
       return;

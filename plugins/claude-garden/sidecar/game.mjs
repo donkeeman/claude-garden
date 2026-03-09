@@ -14,6 +14,12 @@ const STATE_PATH = join(__dirname, '..', 'state.json');
 const BASE_WEIGHTS = { 1: 100, 2: 20, 3: 5, 4: 1, 5: 0.1 };
 const SPAWN_CHANCE = 0.55; // 55% per tool call
 
+// Gacha system
+const GACHA_COST = 200;
+const GACHA_WEIGHTS = { 1: 50, 2: 30, 3: 14, 4: 5, 5: 1 };
+const GACHA_PITY_EPIC = 30;
+const GACHA_PITY_LEGENDARY = 80;
+
 function loadState() {
   if (existsSync(STATE_PATH)) {
     try {
@@ -35,6 +41,7 @@ function migrateState(state) {
     state.collection = migrated;
   }
   if (!state.achievements) state.achievements = [];
+  if (!state.gacha) state.gacha = { pity: { epic: 0, legendary: 0 }, totalPulls: 0 };
   return state;
 }
 
@@ -46,6 +53,7 @@ function createDefaultState() {
     collection: {},  // { [claudeId]: { count: number, firstSeen: 'YYYY-MM-DD' } }
     stats: { totalCollected: 0, totalSpawned: 0, sessionsPlayed: 0 },
     achievements: [],
+    gacha: { pity: { epic: 0, legendary: 0 }, totalPulls: 0 },
   };
 }
 
@@ -294,6 +302,91 @@ export function idleSpawn(game) {
   checkAndNotifyAchievements(game);
   return true;
 }
+
+export function gachaRoll(game, count) {
+  const { persistent } = game;
+  const gacha = persistent.gacha;
+  const actualCount = count === 'max'
+    ? Math.floor(persistent.coins / GACHA_COST)
+    : count;
+
+  if (actualCount <= 0) {
+    game.actionLog.push(`Need ${GACHA_COST}c to roll! (have ${persistent.coins}c)`);
+    return game;
+  }
+
+  const totalCost = actualCount * GACHA_COST;
+  if (persistent.coins < totalCost) {
+    game.actionLog.push(`Need ${totalCost}c! (have ${persistent.coins}c)`);
+    return game;
+  }
+
+  persistent.coins -= totalCost;
+  gacha.totalPulls += actualCount;
+
+  const results = [];
+  const now = new Date().toISOString().slice(0, 10);
+  let newCount = 0;
+
+  for (let i = 0; i < actualCount; i++) {
+    gacha.pity.epic++;
+    gacha.pity.legendary++;
+
+    // Pity takes priority
+    let forcedRarity = null;
+    if (gacha.pity.legendary >= GACHA_PITY_LEGENDARY) {
+      forcedRarity = 5;
+      gacha.pity.legendary = 0;
+      gacha.pity.epic = 0;
+    } else if (gacha.pity.epic >= GACHA_PITY_EPIC) {
+      forcedRarity = 4;
+      gacha.pity.epic = 0;
+    }
+
+    let chosenRarity;
+    if (forcedRarity) {
+      chosenRarity = forcedRarity;
+    } else {
+      let totalWeight = 0;
+      for (const r in GACHA_WEIGHTS) totalWeight += GACHA_WEIGHTS[r];
+      let roll = Math.random() * totalWeight;
+      chosenRarity = 1;
+      for (const r in GACHA_WEIGHTS) {
+        roll -= GACHA_WEIGHTS[r];
+        if (roll <= 0) { chosenRarity = Number(r); break; }
+      }
+      // Natural epic+ resets pity
+      if (chosenRarity >= 4) gacha.pity.epic = 0;
+      if (chosenRarity >= 5) gacha.pity.legendary = 0;
+    }
+
+    // Pick random claude of that rarity (no conditions, no secret)
+    const candidates = ALL_CLAUDES.filter(c => c.rarity === chosenRarity && !c.secret);
+    if (candidates.length === 0) continue;
+    const picked = candidates[Math.floor(Math.random() * candidates.length)];
+
+    // Update collection (no dup coins — gacha is a sink)
+    const isNew = !isDiscovered(persistent.collection, picked.id);
+    if (isNew) {
+      persistent.collection[picked.id] = { count: 1, firstSeen: now };
+      newCount++;
+    } else {
+      persistent.collection[picked.id].count++;
+    }
+    persistent.stats.totalCollected++;
+
+    results.push({ claude: picked, isNew });
+  }
+
+  // Store results for renderer
+  game.gachaResults = { results, count: actualCount, cost: totalCost, newCount };
+
+  saveState(persistent);
+  checkAndNotifyAchievements(game);
+  return game;
+}
+
+export { GACHA_COST };
 
 function rollClaude(persistent, game) {
   const maxRarity = getFacilityValue('antenna', persistent.facilities.antenna);

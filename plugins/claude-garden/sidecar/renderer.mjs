@@ -476,6 +476,88 @@ function renderAchievements(game) {
 }
 
 // ═══════════════════════════════════════════════════
+// GACHA VIEW
+// ═══════════════════════════════════════════════════
+function renderGacha(game) {
+  const W = getWidth();
+  const inner = W - 4;
+  const lines = [];
+  const { persistent } = game;
+  const gacha = persistent.gacha || { pity: { epic: 0, legendary: 0 }, totalPulls: 0 };
+  const COST = 200;
+
+  lines.push(topB(W));
+  lines.push(box(`${C.orange}${C.bold}Gacha${C.reset}    ${C.yellow}Coins: ${persistent.coins}c${C.reset}`, W));
+  lines.push(midB(W));
+  lines.push(emptyBox(W));
+
+  // Roll options
+  const can1 = persistent.coins >= COST;
+  const can10 = persistent.coins >= COST * 10;
+  const maxRolls = Math.floor(persistent.coins / COST);
+
+  const c1 = can1 ? C.green : C.red;
+  const c10 = can10 ? C.green : C.red;
+  const cM = maxRolls > 0 ? C.green : C.red;
+
+  lines.push(box(`  ${C.bold}[1]${C.reset} 1x Roll .......... ${c1}${COST}c${C.reset}`, W));
+  lines.push(box(`  ${C.bold}[0]${C.reset} 10x Roll ......... ${c10}${COST * 10}c${C.reset}`, W));
+  lines.push(box(`  ${C.bold}[M]${C.reset} Max Roll (${maxRolls}x) ${'.'.repeat(Math.max(1, 8 - String(maxRolls).length))} ${cM}${maxRolls * COST}c${C.reset}`, W));
+  lines.push(emptyBox(W));
+
+  // Pity counters
+  lines.push(box(`${C.dim}Pity: ${gacha.pity.epic}/30 Epic  ${gacha.pity.legendary}/80 Legendary${C.reset}`, W));
+  lines.push(box(`${C.dim}Total pulls: ${gacha.totalPulls}${C.reset}`, W));
+  lines.push(emptyBox(W));
+
+  // Results display
+  const gr = game.gachaResults;
+  if (gr && gr.results.length > 0) {
+    lines.push(midB(W));
+    if (gr.count <= 10) {
+      // Individual list
+      lines.push(box(`${C.bold}Result (${gr.count}x) — ${gr.cost}c spent${C.reset}`, W));
+      for (const { claude, isNew } of gr.results) {
+        const rc = RARITY_COLORS[claude.rarity];
+        const stars = RARITY_STARS[claude.rarity];
+        const tag = isNew ? ` ${C.yellow}${C.bold}[NEW!]${C.reset}` : '';
+        lines.push(box(`  ${rc}${stars}${C.reset} ${rc}${claude.name}${C.reset}${tag}`, W));
+      }
+    } else {
+      // Summary for max rolls
+      lines.push(box(`${C.bold}Max Roll (${gr.count}x) — ${gr.cost}c spent${C.reset}`, W));
+
+      const byCounts = {};
+      for (const { claude } of gr.results) {
+        byCounts[claude.rarity] = (byCounts[claude.rarity] || 0) + 1;
+      }
+      for (let r = 1; r <= 5; r++) {
+        if (!byCounts[r]) continue;
+        const rc = RARITY_COLORS[r];
+        const stars = RARITY_STARS[r];
+        const name = RARITY_NAMES[r];
+        lines.push(box(`  ${rc}${stars} ${name}${C.reset}  x${byCounts[r]}`, W));
+      }
+
+      // NEW discoveries
+      const newOnes = gr.results.filter(r => r.isNew);
+      if (newOnes.length > 0) {
+        const names = newOnes.map(r => r.claude.name).join(', ');
+        lines.push(box(`${C.yellow}${C.bold}NEW: ${names}${C.reset}`, W));
+      }
+    }
+  }
+
+  while (lines.length < 20) lines.push(emptyBox(W));
+
+  lines.push(midB(W));
+  lines.push(box(`${C.dim}[1]1x [0]10x [M]Max [Esc]Back [Tab]Next${C.reset}`, W));
+  lines.push(botB(W));
+
+  return lines.join('\n');
+}
+
+// ═══════════════════════════════════════════════════
 // SPLASH SCREEN — official mascot
 // ═══════════════════════════════════════════════════
 export function renderSplash() {
@@ -518,6 +600,7 @@ export function render(game) {
   switch (game.screen) {
     case 'collection': return renderCollection(game);
     case 'upgrades': return renderUpgrades(game);
+    case 'gacha': return renderGacha(game);
     case 'achievements': return renderAchievements(game);
     default: return renderGarden(game);
   }
