@@ -135,7 +135,7 @@ function renderGarden(game) {
   lines.push(box(`${title}${' '.repeat(gap)}${coinStr}`, W));
   lines.push(midB(W));
 
-  // Garden grid — each Claude = 4 lines (ears, body, legs, name+tag)
+  // Garden grid — each Claude = 3 lines (lid, face, name+tag)
   const cellW = 9;
   const perRow = Math.max(1, Math.floor(inner / cellW));
 
@@ -147,30 +147,26 @@ function renderGarden(game) {
   } else {
     lines.push(emptyBox(W));
 
-    // Max 2 rows of mascots (4 lines each = 8 lines)
-    const maxRows = 2;
+    // Max 3 rows of mascots (3 lines each = 9 lines)
+    const maxRows = 3;
     for (let rowStart = 0; rowStart < garden.length && rowStart / perRow < maxRows; rowStart += perRow) {
       const row = garden.slice(rowStart, rowStart + perRow);
 
-      let earLine = '';
-      let bodyLine = '';
-      let legLine = '';
+      let lidLine = '';
+      let faceLine = '';
       let nameLine = '';
 
       for (const { claude, isNew } of row) {
         const rc = RARITY_COLORS[claude.rarity] || C.white;
-        earLine  += padCenter(`${rc}${claude.mini[0]}${C.reset}`, cellW);
-        bodyLine += padCenter(`${rc}${C.bold}${claude.mini[1]}${C.reset}`, cellW);
-        legLine  += padCenter(`${rc}${claude.mini[2]}${C.reset}`, cellW);
+        lidLine  += padCenter(`${rc}${claude.mini[0]}${C.reset}`, cellW);
+        faceLine += padCenter(`${rc}${C.bold}${claude.mini[1]}${C.reset}`, cellW);
         const shortName = claude.name.slice(0, 5);
-        // 처음 등장한 클로드에 NEW! 표시
         const tag = isNew ? `${C.yellow}${C.bold}NEW!${C.reset}` : `${C.dim}${shortName}${C.reset}`;
         nameLine += padCenter(tag, cellW);
       }
 
-      lines.push(box(earLine, W));
-      lines.push(box(bodyLine, W));
-      lines.push(box(legLine, W));
+      lines.push(box(lidLine, W));
+      lines.push(box(faceLine, W));
       lines.push(box(nameLine, W));
     }
 
