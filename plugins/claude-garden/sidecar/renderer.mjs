@@ -407,34 +407,56 @@ function renderAchievements(game) {
   const inner = W - 4;
   const lines = [];
   const { persistent } = game;
-  const unlocked = persistent.achievements || [];
+  const unlocked = persistent.achievements || {};
+  // Migration compat: if array, treat as object with no dates
+  const isUnlocked = (id) => Array.isArray(unlocked) ? unlocked.includes(id) : (id in unlocked);
+  const getDate = (id) => !Array.isArray(unlocked) && unlocked[id] ? unlocked[id].unlockedAt : null;
   const visible = getVisibleAchievements();
   const total = visible.length;
-  const doneCount = visible.filter(a => unlocked.includes(a.id)).length;
+  const doneCount = visible.filter(a => isUnlocked(a.id)).length;
 
   lines.push(topB(W));
   lines.push(box(centerIn(`${C.orange}${C.bold}Achievements${C.reset}  ${C.dim}${doneCount}/${total}${C.reset}`, inner), W));
   lines.push(midB(W));
 
+  // Build flat list of achievements (for cursor indexing)
+  const flatList = [];
+  const catOrder = Object.keys(CATEGORIES);
+  for (const catId of catOrder) {
+    const achs = visible.filter(a => a.category === catId);
+    if (achs.length === 0) continue;
+    flatList.push(...achs);
+  }
+
   // Build display rows grouped by category
   const displayRows = [];
-  const catOrder = Object.keys(CATEGORIES);
   for (const catId of catOrder) {
     const cat = CATEGORIES[catId];
     const achs = visible.filter(a => a.category === catId);
     if (achs.length === 0) continue;
 
-    const catDone = achs.filter(a => unlocked.includes(a.id)).length;
+    const catDone = achs.filter(a => isUnlocked(a.id)).length;
     displayRows.push({ type: 'header', text: `${cat.name} (${catDone}/${achs.length})` });
     for (const ach of achs) {
-      const done = unlocked.includes(ach.id);
-      displayRows.push({ type: 'achievement', ach, done });
+      const done = isUnlocked(ach.id);
+      const flatIdx = flatList.indexOf(ach);
+      const isCursor = flatIdx === (game.achievementCursor || 0);
+      displayRows.push({ type: 'achievement', ach, done, isCursor });
     }
   }
 
-  // Scrolling
-  const maxVisible = 14;
-  const scroll = game.achievementScroll || 0;
+  // Scrolling — auto-scroll to keep cursor visible
+  const maxVisible = 11;
+  let scroll = game.achievementScroll || 0;
+
+  // Find cursor row index in displayRows
+  const cursorRowIdx = displayRows.findIndex(r => r.type === 'achievement' && r.isCursor);
+  if (cursorRowIdx >= 0) {
+    if (cursorRowIdx < scroll) scroll = cursorRowIdx;
+    if (cursorRowIdx >= scroll + maxVisible) scroll = cursorRowIdx - maxVisible + 1;
+    game.achievementScroll = scroll;
+  }
+
   const visibleRows = displayRows.slice(scroll, scroll + maxVisible);
 
   if (scroll > 0) {
@@ -447,11 +469,13 @@ function renderAchievements(game) {
     if (row.type === 'header') {
       lines.push(box(`${C.cyan}${C.bold}── ${row.text} ──${C.reset}`, W));
     } else {
-      const { ach, done } = row;
+      const { ach, done, isCursor } = row;
+      const sel = isCursor ? '\x1b[7m' : '';
+      const selEnd = isCursor ? C.reset : '';
       if (done) {
-        lines.push(box(`  ${C.green}${C.bold}${ach.icon}${C.reset} ${C.bold}${ach.name}${C.reset}`, W));
+        lines.push(box(`${sel}  ${C.green}${C.bold}${ach.icon}${C.reset}${sel} ${C.bold}${ach.name}${C.reset}${selEnd}`, W));
       } else {
-        lines.push(box(`  ${C.dim}${ach.icon} ${ach.name}${C.reset}`, W));
+        lines.push(box(`${sel}  ${C.dim}${ach.icon} ${ach.name}${C.reset}${selEnd}`, W));
       }
     }
   }
@@ -462,10 +486,29 @@ function renderAchievements(game) {
     lines.push(emptyBox(W));
   }
 
-  while (lines.length < 20) lines.push(emptyBox(W));
+  // Detail panel for selected achievement
+  lines.push(midB(W));
+  const cursorAch = flatList[game.achievementCursor || 0];
+  if (cursorAch) {
+    const done = isUnlocked(cursorAch.id);
+    if (done) {
+      lines.push(box(`${C.bold}${cursorAch.name}${C.reset} ${C.green}${C.bold}DONE${C.reset}`, W));
+      lines.push(box(`${C.dim}${cursorAch.desc}${C.reset}`, W));
+      const date = getDate(cursorAch.id);
+      if (date) {
+        lines.push(box(`${C.dim}Unlocked: ${C.reset}${C.bold}${date}${C.reset}`, W));
+      }
+    } else {
+      lines.push(box(`${C.dim}${cursorAch.name}${C.reset}`, W));
+      lines.push(box(`${C.yellow}${C.dim}Hint: ${cursorAch.hint}${C.reset}`, W));
+      lines.push(emptyBox(W));
+    }
+  }
+
+  while (lines.length < 22) lines.push(emptyBox(W));
 
   lines.push(midB(W));
-  lines.push(box(`${C.dim}[↑↓] Scroll [Esc] Back [Tab] Next${C.reset}`, W));
+  lines.push(box(`${C.dim}[↑↓] Select [Esc] Back [Tab] Next${C.reset}`, W));
   lines.push(botB(W));
 
   return lines.join('\n');

@@ -157,20 +157,15 @@ function setupKeyboard() {
     // Arrow keys (escape sequences: \x1b[A/B/C/D)
     if (key === '\x1b[A' || key === '\x1b[B' || key === '\x1b[C' || key === '\x1b[D') {
       if (game.screen === 'achievements') {
-        // Calculate total display rows for scroll max
+        // Cursor-based achievement navigation
         const visible = getVisibleAchievements();
-        const catOrder = Object.keys(CATEGORIES);
-        let totalRows = 0;
-        for (const catId of catOrder) {
-          const achs = visible.filter(a => a.category === catId);
-          if (achs.length > 0) totalRows += 1 + achs.length; // header + items
-        }
-        const maxScroll = Math.max(0, totalRows - 14);
+        const maxIdx = visible.length - 1;
+        if (maxIdx < 0) return;
 
         if (key === '\x1b[A') {
-          game.achievementScroll = Math.max(0, (game.achievementScroll || 0) - 1);
+          game.achievementCursor = Math.max(0, (game.achievementCursor || 0) - 1);
         } else if (key === '\x1b[B') {
-          game.achievementScroll = Math.min(maxScroll, (game.achievementScroll || 0) + 1);
+          game.achievementCursor = Math.min(maxIdx, (game.achievementCursor || 0) + 1);
         }
         lastRender = '';
         renderFrame();

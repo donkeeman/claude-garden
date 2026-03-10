@@ -52,7 +52,7 @@ function createDefaultState() {
     facilities: { gpu: 1, ram: 1, cooling: 1, antenna: 1 },
     collection: {},  // { [claudeId]: { count: number, firstSeen: 'YYYY-MM-DD' } }
     stats: { totalCollected: 0, totalSpawned: 0, sessionsPlayed: 0 },
-    achievements: [],
+    achievements: {},
     gacha: { pity: { epic: 0, legendary: 0 }, totalPulls: 0 },
   };
 }
@@ -85,6 +85,7 @@ export function createGame(sessionId) {
     detailClaude: null,  // for collection detail view
     cursor: 0,           // 컬렉션 리스트 커서 위치
     achievementScroll: 0,
+    achievementCursor: 0,
     sessionStart: Date.now(),
     consecutiveBash: 0,  // consecutive Bash tool calls
     consecutiveFails: 0, // consecutive tool failures
@@ -125,7 +126,8 @@ function checkAndNotifyAchievements(game) {
   delete game._capacity;
 
   for (const id of newUnlocks) {
-    persistent.achievements.push(id);
+    const now = new Date().toISOString().slice(0, 10);
+    persistent.achievements[id] = { unlockedAt: now };
     const ach = getAchievement(id);
     if (ach) {
       game.actionLog.push(`Achievement: ${ach.icon} ${ach.name}`);
@@ -338,9 +340,11 @@ export function gachaRoll(game, count) {
       forcedRarity = 5;
       gacha.pity.legendary = 0;
       gacha.pity.epic = 0;
+      gacha._hitPityLegendary = true;
     } else if (gacha.pity.epic >= GACHA_PITY_EPIC) {
       forcedRarity = 4;
       gacha.pity.epic = 0;
+      gacha._hitPityEpic = true;
     }
 
     let chosenRarity;
