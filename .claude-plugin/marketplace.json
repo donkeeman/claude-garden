@@ -9,7 +9,7 @@
     {
       "name": "claude-garden",
       "description": "Collect unique Claude variants while coding — idle collection game sidecar for Claude Code",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "donkeeman"
       },
