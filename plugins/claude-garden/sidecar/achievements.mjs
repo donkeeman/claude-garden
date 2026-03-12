@@ -6,6 +6,7 @@ import { isDiscovered, getDiscoveredIds } from './game.mjs';
 
 export const CATEGORIES = {
   collection: { name: 'Collection', icon: '{}' },
+  mastery:    { name: 'Mastery',    icon: '<>' },
   economy:    { name: 'Economy',    icon: '$$' },
   upgrades:   { name: 'Upgrades',   icon: '^^' },
   session:    { name: 'Session',    icon: '##' },
@@ -73,6 +74,56 @@ export const ACHIEVEMENTS = [
     desc: 'Discover a Legendary Claude.',
     hint: 'Max Antenna. Then pray.',
     check: (p) => ALL_CLAUDES.some(c => c.rarity === 5 && isDiscovered(p.collection, c.id)),
+  },
+
+  // ─── Mastery (rarity completion → titles) ───
+  {
+    id: 'common_master', name: 'Common Master', icon: '<C>',
+    category: 'mastery',
+    desc: 'Discover every Common Claude.',
+    hint: 'Collect all white-star Claudes.',
+    title: 'Beginner',
+    check: (p) => ALL_CLAUDES.filter(c => c.rarity === 1 && !c.secret).every(c => isDiscovered(p.collection, c.id)),
+  },
+  {
+    id: 'uncommon_master', name: 'Uncommon Master', icon: '<U>',
+    category: 'mastery',
+    desc: 'Discover every Uncommon Claude.',
+    hint: 'Some appear only on weekends or early mornings.',
+    title: 'Collector',
+    check: (p) => ALL_CLAUDES.filter(c => c.rarity === 2 && !c.secret).every(c => isDiscovered(p.collection, c.id)),
+  },
+  {
+    id: 'rare_master', name: 'Rare Master', icon: '<R>',
+    category: 'mastery',
+    desc: 'Discover every Rare Claude.',
+    hint: 'Upgrade Antenna and Cooling. Night has secrets.',
+    title: 'Hunter',
+    check: (p) => ALL_CLAUDES.filter(c => c.rarity === 3 && !c.secret).every(c => isDiscovered(p.collection, c.id)),
+  },
+  {
+    id: 'epic_master', name: 'Epic Master', icon: '<E>',
+    category: 'mastery',
+    desc: 'Discover every Epic Claude.',
+    hint: 'Antenna Lv.4+. Patience is a virtue.',
+    title: 'Connoisseur',
+    check: (p) => ALL_CLAUDES.filter(c => c.rarity === 4 && !c.secret).every(c => isDiscovered(p.collection, c.id)),
+  },
+  {
+    id: 'legendary_master', name: 'Legendary Master', icon: '<L>',
+    category: 'mastery',
+    desc: 'Discover every Legendary Claude.',
+    hint: 'Max Antenna. Some need special conditions.',
+    title: 'Legend',
+    check: (p) => ALL_CLAUDES.filter(c => c.rarity === 5 && !c.secret).every(c => isDiscovered(p.collection, c.id)),
+  },
+  {
+    id: 'grand_master', name: 'Grand Master', icon: '{G}',
+    category: 'mastery',
+    desc: 'Discover every non-secret Claude.',
+    hint: 'Complete all five rarity tiers.',
+    title: 'Grand Master',
+    check: (p) => ALL_CLAUDES.filter(c => !c.secret).every(c => isDiscovered(p.collection, c.id)),
   },
 
   // ─── Economy ───
@@ -255,4 +306,20 @@ export function getVisibleAchievements() {
 
 export function getAchievement(id) {
   return ACHIEVEMENTS.find(a => a.id === id);
+}
+
+// Title system — achievements with `title` field grant equippable titles
+export function getTitleAchievements() {
+  return ACHIEVEMENTS.filter(a => a.title);
+}
+
+export function getEquippedTitle(persistent) {
+  const titleId = persistent.selectedTitle;
+  if (!titleId) return null;
+  const ach = ACHIEVEMENTS.find(a => a.id === titleId);
+  if (!ach || !ach.title) return null;
+  // Must be unlocked
+  const unlocked = persistent.achievements || {};
+  if (Array.isArray(unlocked) ? !unlocked.includes(titleId) : !(titleId in unlocked)) return null;
+  return ach.title;
 }

@@ -6,7 +6,7 @@ import {
 } from './claudes.mjs';
 import { FACILITIES, FACILITY_KEYS, getFacilityValue, getUpgradeCost } from './facilities.mjs';
 import { getDiscoveredIds, isDiscovered } from './game.mjs';
-import { ACHIEVEMENTS, CATEGORIES, getVisibleAchievements } from './achievements.mjs';
+import { ACHIEVEMENTS, CATEGORIES, getVisibleAchievements, getEquippedTitle } from './achievements.mjs';
 
 // ANSI escape codes
 const C = {
@@ -130,8 +130,10 @@ function renderGarden(game) {
   // Title bar
   lines.push(topB(W));
   const coinStr = `${C.yellow}${persistent.coins}c${C.reset}`;
-  const title = `${C.orange}${C.bold}Claude Garden${C.reset}`;
-  const gap = Math.max(1, inner - strip(title).length - strip(coinStr).length);
+  const equippedTitle = getEquippedTitle(persistent);
+  const titleSuffix = equippedTitle ? ` ${C.cyan}[${equippedTitle}]${C.reset}` : '';
+  const title = `${C.orange}${C.bold}Claude Garden${C.reset}${titleSuffix}`;
+  const gap = Math.max(1, inner - visWidth(strip(title)) - visWidth(strip(coinStr)));
   lines.push(box(`${title}${' '.repeat(gap)}${coinStr}`, W));
   lines.push(midB(W));
 
@@ -465,6 +467,7 @@ function renderAchievements(game) {
     lines.push(emptyBox(W));
   }
 
+  const equipped = persistent.selectedTitle;
   for (const row of visibleRows) {
     if (row.type === 'header') {
       lines.push(box(`${C.cyan}${C.bold}── ${row.text} ──${C.reset}`, W));
@@ -472,8 +475,10 @@ function renderAchievements(game) {
       const { ach, done, isCursor } = row;
       const sel = isCursor ? '\x1b[7m' : '';
       const selEnd = isCursor ? C.reset : '';
+      const isEquipped = ach.title && equipped === ach.id;
+      const titleMark = isEquipped ? `${C.cyan} <${C.reset}` : (ach.title && done ? `${C.dim} ~${C.reset}` : '');
       if (done) {
-        lines.push(box(`${sel}  ${C.green}${C.bold}${ach.icon}${C.reset}${sel} ${C.bold}${ach.name}${C.reset}${selEnd}`, W));
+        lines.push(box(`${sel}  ${C.green}${C.bold}${ach.icon}${C.reset}${sel} ${C.bold}${ach.name}${C.reset}${selEnd}${titleMark}`, W));
       } else {
         lines.push(box(`${sel}  ${C.dim}${ach.icon} ${ach.name}${C.reset}${selEnd}`, W));
       }
@@ -498,17 +503,30 @@ function renderAchievements(game) {
       if (date) {
         lines.push(box(`${C.dim}Unlocked: ${C.reset}${C.bold}${date}${C.reset}`, W));
       }
+      if (cursorAch.title) {
+        const isEquipped = equipped === cursorAch.id;
+        if (isEquipped) {
+          lines.push(box(`${C.cyan}${C.bold}Title: [${cursorAch.title}]${C.reset} ${C.dim}(Enter to unequip)${C.reset}`, W));
+        } else {
+          lines.push(box(`${C.dim}Title: ${cursorAch.title}${C.reset} ${C.dim}(Enter to equip)${C.reset}`, W));
+        }
+      }
     } else {
       lines.push(box(`${C.dim}${cursorAch.name}${C.reset}`, W));
       lines.push(box(`${C.yellow}${C.dim}Hint: ${cursorAch.hint}${C.reset}`, W));
-      lines.push(emptyBox(W));
+      if (cursorAch.title) {
+        lines.push(box(`${C.dim}Grants title: ${cursorAch.title}${C.reset}`, W));
+      } else {
+        lines.push(emptyBox(W));
+      }
     }
   }
 
   while (lines.length < 22) lines.push(emptyBox(W));
 
   lines.push(midB(W));
-  lines.push(box(`${C.dim}[↑↓] Select [Esc] Back [Tab] Next${C.reset}`, W));
+  const ctrlHint = flatList.some(a => a.title) ? '[Enter] Equip title ' : '';
+  lines.push(box(`${C.dim}[↑↓] Select ${ctrlHint}[Esc] Back [Tab] Next${C.reset}`, W));
   lines.push(botB(W));
 
   return lines.join('\n');
