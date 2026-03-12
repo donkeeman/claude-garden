@@ -5,7 +5,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
-import { createGame, processToolCall, processToolFail, collectAll, upgrade, finishSession, idleSpawn, gachaRoll, getDiscoveredIds, isDiscovered } from './game.mjs';
+import { createGame, processToolCall, processToolFail, collectAll, upgrade, finishSession, idleSpawn, gachaRoll, equipTitle, getDiscoveredIds, isDiscovered } from './game.mjs';
 import { render, renderSplash } from './renderer.mjs';
 import { ALL_CLAUDES } from './claudes.mjs';
 import { FACILITY_KEYS } from './facilities.mjs';
@@ -242,12 +242,24 @@ function setupKeyboard() {
       return;
     }
 
-    // Enter → open detail in collection (발견된 클로드만)
+    // Enter → open detail in collection / equip title in achievements
     if (key === '\r' || key === '\n') {
       if (game.screen === 'collection' && !game.detailClaude) {
         const cl = ALL_CLAUDES[game.cursor];
         if (cl && isDiscovered(game.persistent.collection, cl.id)) {
           game.detailClaude = cl;
+          lastRender = '';
+          renderFrame();
+        }
+      } else if (game.screen === 'achievements') {
+        const visible = getVisibleAchievements();
+        const flatList = [];
+        for (const catId of Object.keys(CATEGORIES)) {
+          flatList.push(...visible.filter(a => a.category === catId));
+        }
+        const ach = flatList[game.achievementCursor || 0];
+        if (ach && ach.title) {
+          game = equipTitle(game, ach.id);
           lastRender = '';
           renderFrame();
         }

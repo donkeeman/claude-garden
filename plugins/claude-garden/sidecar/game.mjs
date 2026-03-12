@@ -2,13 +2,17 @@
 
 import { ALL_CLAUDES, RARITY_STARS, DUP_BONUS } from './claudes.mjs';
 import { FACILITIES, FACILITY_KEYS, getFacilityValue, getUpgradeCost } from './facilities.mjs';
-import { checkAchievements, getAchievement } from './achievements.mjs';
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { checkAchievements, getAchievement, getTitleAchievements } from './achievements.mjs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { homedir } from 'node:os';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const STATE_PATH = join(__dirname, '..', 'state.json');
+// Store state in version-independent path to survive plugin updates
+const STATE_DIR = join(homedir(), '.claude', 'claude-garden');
+const STATE_PATH = join(STATE_DIR, 'state.json');
+const LEGACY_STATE_PATH = join(__dirname, '..', 'state.json');
 
 // Rarity spawn weights (before cooling multiplier)
 const BASE_WEIGHTS = { 1: 100, 2: 20, 3: 5, 4: 1, 5: 0.1 };
@@ -21,12 +25,27 @@ const GACHA_PITY_EPIC = 30;
 const GACHA_PITY_LEGENDARY = 80;
 
 function loadState() {
+  // Ensure state directory exists
+  if (!existsSync(STATE_DIR)) mkdirSync(STATE_DIR, { recursive: true });
+
   if (existsSync(STATE_PATH)) {
     try {
       const state = JSON.parse(readFileSync(STATE_PATH, 'utf-8'));
       return migrateState(state);
     } catch {}
   }
+
+  // Migrate from legacy version-specific path
+  if (existsSync(LEGACY_STATE_PATH)) {
+    try {
+      const state = JSON.parse(readFileSync(LEGACY_STATE_PATH, 'utf-8'));
+      const migrated = migrateState(state);
+      saveState(migrated);
+      try { unlinkSync(LEGACY_STATE_PATH); } catch {}
+      return migrated;
+    } catch {}
+  }
+
   return createDefaultState();
 }
 
@@ -42,6 +61,7 @@ function migrateState(state) {
   }
   if (!state.achievements) state.achievements = [];
   if (!state.gacha) state.gacha = { pity: { epic: 0, legendary: 0 }, totalPulls: 0 };
+  if (state.selectedTitle === undefined) state.selectedTitle = null;
   return state;
 }
 
@@ -54,6 +74,7 @@ function createDefaultState() {
     stats: { totalCollected: 0, totalSpawned: 0, sessionsPlayed: 0 },
     achievements: {},
     gacha: { pity: { epic: 0, legendary: 0 }, totalPulls: 0 },
+    selectedTitle: null,  // achievement ID with title field
   };
 }
 
@@ -163,7 +184,9 @@ export function processToolCall(game, toolName) {
   // Try to spawn
   const capacity = getFacilityValue('ram', persistent.facilities.ram);
   if (game.garden.length < capacity && Math.random() < SPAWN_CHANCE) {
-    const spawned = rollClaude(persistent, game);
+    // First spawn is always Normal rarity
+    const isFirstSpawn = Object.keys(persistent.collection).length === 0 && persistent.stats.totalSpawned === 0;
+    const spawned = isFirstSpawn ? rollFirstClaude() : rollClaude(persistent, game);
     if (spawned) {
       const isNew = !isDiscovered(persistent.collection, spawned.id);
       game.garden.push({ claude: spawned, isNew });
@@ -390,7 +413,40 @@ export function gachaRoll(game, count) {
   return game;
 }
 
+export function equipTitle(game, achievementId) {
+  const { persistent } = game;
+  const unlocked = persistent.achievements || {};
+  const isUnlocked = Array.isArray(unlocked) ? unlocked.includes(achievementId) : (achievementId in unlocked);
+
+  if (!isUnlocked) {
+    game.actionLog.push('Not yet unlocked!');
+    return game;
+  }
+
+  const ach = getAchievement(achievementId);
+  if (!ach || !ach.title) {
+    return game;
+  }
+
+  if (persistent.selectedTitle === achievementId) {
+    // Toggle off
+    persistent.selectedTitle = null;
+    game.actionLog.push('Title removed.');
+  } else {
+    persistent.selectedTitle = achievementId;
+    game.actionLog.push(`Title equipped: ${ach.title}`);
+  }
+
+  saveState(persistent);
+  return game;
+}
+
 export { GACHA_COST };
+
+function rollFirstClaude() {
+  const normals = ALL_CLAUDES.filter(c => c.rarity === 1 && !c.condition && !c.secret);
+  return normals[Math.floor(Math.random() * normals.length)];
+}
 
 function rollClaude(persistent, game) {
   const maxRarity = getFacilityValue('antenna', persistent.facilities.antenna);
