@@ -3,7 +3,7 @@
 import { ALL_CLAUDES, RARITY_STARS, DUP_BONUS } from './claudes.mjs';
 import { FACILITIES, FACILITY_KEYS, getFacilityValue, getUpgradeCost } from './facilities.mjs';
 import { checkAchievements, getAchievement, getTitleAchievements } from './achievements.mjs';
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { homedir } from 'node:os';
@@ -41,6 +41,7 @@ function loadState() {
       const state = JSON.parse(readFileSync(LEGACY_STATE_PATH, 'utf-8'));
       const migrated = migrateState(state);
       saveState(migrated);
+      try { unlinkSync(LEGACY_STATE_PATH); } catch {}
       return migrated;
     } catch {}
   }
