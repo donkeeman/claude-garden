@@ -782,7 +782,7 @@ function renderProfile(game) {
   lines.push(box(`  ${C.dim}Sessions:${C.reset}    ${C.bold}${sessions}${C.reset}`, W));
 
   // Copy feedback from action log
-  const copyLog = (game.actionLog || []).filter(l => l.includes('Copied') || l.includes('clipboard'));
+  const copyLog = (game.actionLog || []).filter(l => l.toLowerCase().includes('clipboard'));
   if (copyLog.length > 0) {
     lines.push(emptyBox(W));
     const lastCopy = copyLog[copyLog.length - 1];
