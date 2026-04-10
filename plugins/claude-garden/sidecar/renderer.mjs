@@ -650,6 +650,155 @@ export function renderSplash() {
 }
 
 // ═══════════════════════════════════════════════════
+// PROFILE VIEW — nickname, favorite, stats
+// ═══════════════════════════════════════════════════
+function renderProfile(game) {
+  const W = getWidth();
+  const inner = W - 4;
+  const lines = [];
+  const { persistent } = game;
+  const mode = game.profileMode || 'view';
+
+  // ─── Edit Nickname mode ───
+  if (mode === 'editNickname') {
+    lines.push(topB(W));
+    lines.push(box(centerIn(`${C.orange}${C.bold}Set Nickname${C.reset}`, inner), W));
+    lines.push(midB(W));
+    lines.push(emptyBox(W));
+    lines.push(emptyBox(W));
+
+    const draft = game.nicknameDraft || '';
+    lines.push(box(centerIn(`${C.bold}${draft}_${C.reset}`, inner), W));
+    lines.push(emptyBox(W));
+    lines.push(box(centerIn(`${C.dim}Max 16 characters${C.reset}`, inner), W));
+
+    while (lines.length < 20) lines.push(emptyBox(W));
+
+    lines.push(midB(W));
+    lines.push(box(`${C.dim}[Enter] Confirm  [Esc] Cancel${C.reset}`, W));
+    lines.push(botB(W));
+    return lines.join('\n');
+  }
+
+  // ─── Select Favorite mode ───
+  if (mode === 'selectFavorite') {
+    lines.push(topB(W));
+    lines.push(box(centerIn(`${C.orange}${C.bold}Select Favorite Claude${C.reset}`, inner), W));
+    lines.push(midB(W));
+
+    const collection = persistent.collection || {};
+    const discoveredIds = getDiscoveredIds(collection);
+    const discovered = discoveredIds
+      .map(id => ALL_CLAUDES.find(c => c.id === id))
+      .filter(Boolean);
+
+    const cursor = game.favoriteCursor || 0;
+    const currentFav = persistent.favoriteClaude;
+
+    // Scrollable list
+    const maxVisible = 12;
+    let scrollStart = 0;
+    if (cursor >= maxVisible) {
+      scrollStart = cursor - maxVisible + 1;
+    }
+    const visibleSlice = discovered.slice(scrollStart, scrollStart + maxVisible);
+
+    if (scrollStart > 0) {
+      lines.push(box(`${C.dim}  \u25B2 more above${C.reset}`, W));
+    } else {
+      lines.push(emptyBox(W));
+    }
+
+    for (let i = 0; i < visibleSlice.length; i++) {
+      const cl = visibleSlice[i];
+      const globalIdx = scrollStart + i;
+      const isCursor = globalIdx === cursor;
+      const isFav = cl.id === currentFav;
+      const rc = RARITY_COLORS[cl.rarity] || C.white;
+      const stars = RARITY_STARS[cl.rarity];
+      const favMark = isFav ? ` ${C.red}\u2665${C.reset}` : '';
+      const sel = isCursor ? '\x1b[7m' : '';
+      const selEnd = isCursor ? C.reset : '';
+      lines.push(box(`${sel}  ${rc}${stars}${C.reset}${sel} ${rc}${C.bold}${cl.name}${C.reset}${selEnd}${favMark}`, W));
+    }
+
+    if (scrollStart + maxVisible < discovered.length) {
+      lines.push(box(`${C.dim}  \u25BC more below${C.reset}`, W));
+    } else {
+      lines.push(emptyBox(W));
+    }
+
+    if (discovered.length === 0) {
+      lines.push(box(centerIn(`${C.dim}No Claudes discovered yet${C.reset}`, inner), W));
+    }
+
+    while (lines.length < 20) lines.push(emptyBox(W));
+
+    lines.push(midB(W));
+    lines.push(box(`${C.dim}[\u2191\u2193] Select  [Enter] Confirm  [Esc] Cancel${C.reset}`, W));
+    lines.push(botB(W));
+    return lines.join('\n');
+  }
+
+  // ─── View mode (default) ───
+  lines.push(topB(W));
+  lines.push(box(centerIn(`${C.orange}${C.bold}Profile${C.reset}`, inner), W));
+  lines.push(midB(W));
+
+  // Nickname + title
+  const nickname = persistent.nickname || 'Anonymous';
+  const equippedTitle = getEquippedTitle(persistent);
+  const titleSuffix = equippedTitle ? `  ${C.cyan}[${equippedTitle}]${C.reset}` : '';
+  lines.push(box(centerIn(`${C.bold}${nickname}${C.reset}${titleSuffix}`, inner), W));
+  lines.push(emptyBox(W));
+
+  // Favorite Claude display
+  const favId = persistent.favoriteClaude;
+  const fav = favId ? ALL_CLAUDES.find(c => c.id === favId) : null;
+
+  if (fav && fav.sprite) {
+    for (const spLine of fav.sprite) {
+      const rc = RARITY_COLORS[fav.rarity] || C.white;
+      lines.push(box(centerIn(`${rc}${C.bold}${spLine}${C.reset}`, inner), W));
+    }
+    const rc = RARITY_COLORS[fav.rarity] || C.white;
+    const stars = RARITY_STARS[fav.rarity];
+    lines.push(box(centerIn(`${rc}${C.bold}${fav.name} Claude${C.reset} ${rc}${stars}${C.reset}`, inner), W));
+  } else {
+    lines.push(box(centerIn(`${C.dim}No favorite set${C.reset}`, inner), W));
+    lines.push(emptyBox(W));
+  }
+
+  lines.push(emptyBox(W));
+
+  // Quick stats
+  lines.push(midB(W));
+  const collection = persistent.collection || {};
+  const discoveredIds = getDiscoveredIds(collection);
+  const totalCoins = persistent.totalCoins ?? persistent.coins ?? 0;
+  const sessions = persistent.stats?.sessionsPlayed ?? 0;
+  lines.push(box(`  ${C.dim}Collection:${C.reset}  ${C.bold}${discoveredIds.length}/${ALL_CLAUDES.length}${C.reset}`, W));
+  lines.push(box(`  ${C.dim}Total coins:${C.reset} ${C.yellow}${C.bold}${totalCoins}${C.reset}`, W));
+  lines.push(box(`  ${C.dim}Sessions:${C.reset}    ${C.bold}${sessions}${C.reset}`, W));
+
+  // Copy feedback from action log
+  const copyLog = (game.actionLog || []).filter(l => l.includes('Copied') || l.includes('clipboard'));
+  if (copyLog.length > 0) {
+    lines.push(emptyBox(W));
+    const lastCopy = copyLog[copyLog.length - 1];
+    lines.push(box(`  ${C.green}${trunc(lastCopy, inner - 4)}${C.reset}`, W));
+  }
+
+  while (lines.length < 20) lines.push(emptyBox(W));
+
+  lines.push(midB(W));
+  lines.push(box(`${C.dim}[N]Name [F]Favorite [C]Copy [Tab]Next${C.reset}`, W));
+  lines.push(botB(W));
+
+  return lines.join('\n');
+}
+
+// ═══════════════════════════════════════════════════
 // MAIN RENDER DISPATCHER
 // ═══════════════════════════════════════════════════
 export function render(game) {
@@ -659,6 +808,7 @@ export function render(game) {
     case 'upgrades': return renderUpgrades(game);
     case 'gacha': return renderGacha(game);
     case 'achievements': return renderAchievements(game);
+    case 'profile': return renderProfile(game);
     default: return renderGarden(game);
   }
 }
