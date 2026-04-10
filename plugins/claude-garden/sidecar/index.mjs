@@ -5,9 +5,10 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
-import { createGame, processToolCall, processToolFail, collectAll, upgrade, finishSession, idleSpawn, gachaRoll, equipTitle, getDiscoveredIds, isDiscovered } from './game.mjs';
+import { createGame, processToolCall, processToolFail, collectAll, upgrade, finishSession, idleSpawn, gachaRoll, equipTitle, setNickname, setFavoriteClaude, getDiscoveredIds, isDiscovered } from './game.mjs';
 import { render, renderSplash } from './renderer.mjs';
 import { ALL_CLAUDES } from './claudes.mjs';
+import { generateCard, copyToClipboard } from './profile.mjs';
 import { FACILITY_KEYS } from './facilities.mjs';
 import { getVisibleAchievements, CATEGORIES } from './achievements.mjs';
 
@@ -18,7 +19,7 @@ const PID_FILE = join(EVENT_DIR, 'sidecar.pid');
 if (!existsSync(EVENT_DIR)) mkdirSync(EVENT_DIR, { recursive: true });
 writeFileSync(PID_FILE, String(process.pid));
 
-const SCREENS = ['garden', 'collection', 'upgrades', 'gacha', 'achievements'];
+const SCREENS = ['garden', 'collection', 'upgrades', 'gacha', 'achievements', 'profile'];
 let game = null;
 let lastLineCount = 0;
 let lastRender = '';
@@ -147,11 +148,129 @@ function setupKeyboard() {
     // Tab → switch screen
     if (key === '\t') {
       game.detailClaude = null;
+      game.profileMode = 'view';
       const idx = SCREENS.indexOf(game.screen);
       game.screen = SCREENS[(idx + 1) % SCREENS.length];
       lastRender = '';
       renderFrame();
       return;
+    }
+
+    // ─── Profile screen input ───
+    if (game.screen === 'profile') {
+      const profileMode = game.profileMode || 'view';
+
+      // ── Nickname edit mode ──
+      if (profileMode === 'editNickname') {
+        if (key === '\x1b') {
+          game.profileMode = 'view';
+          game.nicknameDraft = undefined;
+          lastRender = '';
+          renderFrame();
+          return;
+        }
+        if (key === '\r' || key === '\n') {
+          game = setNickname(game, game.nicknameDraft || '');
+          game.profileMode = 'view';
+          game.nicknameDraft = undefined;
+          lastRender = '';
+          renderFrame();
+          return;
+        }
+        if (key === '\x7F' || key === '\b') {
+          if (game.nicknameDraft && game.nicknameDraft.length > 0) {
+            game.nicknameDraft = [...game.nicknameDraft].slice(0, -1).join('');
+          }
+          lastRender = '';
+          renderFrame();
+          return;
+        }
+        // Printable character (single char, code >= 32)
+        if (key.length === 1 && key.charCodeAt(0) >= 32) {
+          const draft = game.nicknameDraft || '';
+          if ([...draft].length < 16) {
+            game.nicknameDraft = draft + key;
+          }
+          lastRender = '';
+          renderFrame();
+          return;
+        }
+        // Multi-byte character (emoji, CJK, etc)
+        if ([...key].length === 1 && key.codePointAt(0) >= 32) {
+          const draft = game.nicknameDraft || '';
+          if ([...draft].length < 16) {
+            game.nicknameDraft = draft + key;
+          }
+          lastRender = '';
+          renderFrame();
+          return;
+        }
+        return; // Consume all other keys in edit mode
+      }
+
+      // ── Favorite selection mode ──
+      if (profileMode === 'selectFavorite') {
+        const discoveredIds = getDiscoveredIds(game.persistent.collection);
+        const discovered = ALL_CLAUDES.filter(c => discoveredIds.includes(c.id));
+        const maxIdx = Math.max(0, discovered.length - 1);
+
+        if (key === '\x1b[A') {
+          game.favoriteCursor = Math.max(0, (game.favoriteCursor || 0) - 1);
+          lastRender = '';
+          renderFrame();
+          return;
+        }
+        if (key === '\x1b[B') {
+          game.favoriteCursor = Math.min(maxIdx, (game.favoriteCursor || 0) + 1);
+          lastRender = '';
+          renderFrame();
+          return;
+        }
+        if (key === '\r' || key === '\n') {
+          if (discovered.length > 0) {
+            const idx = game.favoriteCursor || 0;
+            const cl = discovered[idx];
+            game = setFavoriteClaude(game, cl.id);
+          }
+          game.profileMode = 'view';
+          game.favoriteCursor = undefined;
+          lastRender = '';
+          renderFrame();
+          return;
+        }
+        if (key === '\x1b') {
+          game.profileMode = 'view';
+          game.favoriteCursor = undefined;
+          lastRender = '';
+          renderFrame();
+          return;
+        }
+        return; // Consume all other keys in select mode
+      }
+
+      // ── View mode controls ──
+      if (key === 'n' || key === 'N') {
+        game.profileMode = 'editNickname';
+        game.nicknameDraft = game.persistent.nickname || '';
+        lastRender = '';
+        renderFrame();
+        return;
+      }
+      if (key === 'f' || key === 'F') {
+        game.profileMode = 'selectFavorite';
+        game.favoriteCursor = 0;
+        lastRender = '';
+        renderFrame();
+        return;
+      }
+      if (key === 'c' || key === 'C') {
+        const card = generateCard(game.persistent);
+        const ok = copyToClipboard(card);
+        game.actionLog.push(ok ? 'Copied to clipboard!' : 'Clipboard copy failed.');
+        lastRender = '';
+        renderFrame();
+        return;
+      }
     }
 
     // Arrow keys (escape sequences: \x1b[A/B/C/D)
