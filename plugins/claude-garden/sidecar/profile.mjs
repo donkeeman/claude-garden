@@ -148,14 +148,15 @@ export function generateCard(persistent) {
 
   lines.push(leftRow(`Collection  ${discoveredCount}/${nonSecretTotal} (${pct}%)`));
 
-  // Rarity breakdown
+  // Rarity breakdown (initials to avoid ★ width ambiguity)
+  const RARITY_INITIALS = ['', 'C', 'U', 'R', 'E', 'L'];
   const rarityParts = [];
   for (let r = 1; r <= 5; r++) {
     const count = discoveredIds.filter(id => {
       const cl = ALL_CLAUDES.find(c => c.id === id);
       return cl && cl.rarity === r && !cl.secret;
     }).length;
-    rarityParts.push(`${RARITY_STARS[r]}${count}`);
+    rarityParts.push(`${count}${RARITY_INITIALS[r]}`);
   }
   lines.push(leftRow(rarityParts.join(' ')));
 
