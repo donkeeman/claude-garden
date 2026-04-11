@@ -147,9 +147,29 @@ export function generateCard(persistent) {
   const sessions = persistent.stats?.sessionsPlayed ?? 0;
 
   lines.push(leftRow(`Collection  ${discoveredCount}/${nonSecretTotal} (${pct}%)`));
+
+  // Rarity breakdown
+  const rarityParts = [];
+  for (let r = 1; r <= 5; r++) {
+    const count = discoveredIds.filter(id => {
+      const cl = ALL_CLAUDES.find(c => c.id === id);
+      return cl && cl.rarity === r && !cl.secret;
+    }).length;
+    rarityParts.push(`${RARITY_STARS[r]}${count}`);
+  }
+  lines.push(leftRow(rarityParts.join(' ')));
+
   lines.push(leftRow(`Coins       ${totalCoins}`));
   lines.push(leftRow(`Gacha       ${gachaPulls} pulls`));
   lines.push(leftRow(`Sessions    ${sessions}`));
+
+  // Since date — earliest firstSeen in collection
+  const collection = persistent.collection || {};
+  const dates = Object.values(collection).map(v => v.firstSeen).filter(Boolean);
+  if (dates.length > 0) {
+    const since = dates.sort()[0];
+    lines.push(leftRow(`Since       ${since}`));
+  }
 
   // ── Install command footer ───────────────────────────────────
   lines.push(divider());
