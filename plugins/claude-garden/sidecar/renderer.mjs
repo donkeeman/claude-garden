@@ -7,6 +7,7 @@ import {
 import { FACILITIES, FACILITY_KEYS, getFacilityValue, getUpgradeCost } from './facilities.mjs';
 import { getDiscoveredIds, isDiscovered } from './game.mjs';
 import { ACHIEVEMENTS, CATEGORIES, getVisibleAchievements, getEquippedTitle } from './achievements.mjs';
+import { generateCard } from './profile.mjs';
 import { userInfo } from 'node:os';
 
 // ANSI escape codes
@@ -689,61 +690,49 @@ function renderProfile(game) {
   }
 
   // ─── View mode (default) ───
-  lines.push(topB(W));
-  lines.push(box(centerIn(`${C.orange}${C.bold}Profile${C.reset}`, inner), W));
-  lines.push(midB(W));
-
-  // Nickname + title
-  let defaultName = 'Anonymous';
-  try { defaultName = userInfo().username || defaultName; } catch {}
-  const nickname = persistent.nickname || defaultName;
-  const equippedTitle = getEquippedTitle(persistent);
-  const titleSuffix = equippedTitle ? `  ${C.cyan}[${equippedTitle}]${C.reset}` : '';
-  lines.push(box(centerIn(`${C.bold}${nickname}${C.reset}${titleSuffix}`, inner), W));
-  lines.push(emptyBox(W));
-
-  // Favorite Claude display
-  const favId = persistent.favoriteClaude;
-  const fav = favId ? ALL_CLAUDES.find(c => c.id === favId) : null;
-
-  if (fav && fav.sprite) {
-    for (const spLine of fav.sprite) {
-      const rc = RARITY_COLORS[fav.rarity] || C.white;
-      lines.push(box(centerIn(`${rc}${C.bold}${spLine}${C.reset}`, inner), W));
-    }
-    const rc = RARITY_COLORS[fav.rarity] || C.white;
-    const stars = RARITY_STARS[fav.rarity];
-    lines.push(box(centerIn(`${rc}${C.bold}${fav.name} Claude${C.reset} ${rc}${stars}${C.reset}`, inner), W));
-  } else {
-    lines.push(box(centerIn(`${C.dim}No favorite set${C.reset}`, inner), W));
-    lines.push(box(centerIn(`${C.dim}Set from Collection > Detail [F]${C.reset}`, inner), W));
-  }
-
-  lines.push(emptyBox(W));
-
-  // Quick stats
-  lines.push(midB(W));
-  const collection = persistent.collection || {};
-  const discoveredIds = getDiscoveredIds(collection);
-  const totalCoins = persistent.totalCoins ?? persistent.coins ?? 0;
-  const sessions = persistent.stats?.sessionsPlayed ?? 0;
-  lines.push(box(`  ${C.dim}Collection:${C.reset}  ${C.bold}${discoveredIds.length}/${ALL_CLAUDES.length}${C.reset}`, W));
-  lines.push(box(`  ${C.dim}Total coins:${C.reset} ${C.yellow}${C.bold}${totalCoins}${C.reset}`, W));
-  lines.push(box(`  ${C.dim}Sessions:${C.reset}    ${C.bold}${sessions}${C.reset}`, W));
-
-  // Copy feedback from action log
-  const copyLog = (game.actionLog || []).filter(l => l.toLowerCase().includes('clipboard'));
-  if (copyLog.length > 0) {
+  if (!persistent.favoriteClaude) {
+    // No favorite — show prompt to set one
+    lines.push(topB(W));
+    lines.push(box(centerIn(`${C.orange}${C.bold}Profile${C.reset}`, inner), W));
+    lines.push(midB(W));
     lines.push(emptyBox(W));
-    const lastCopy = copyLog[copyLog.length - 1];
-    lines.push(box(`  ${C.green}${trunc(lastCopy, inner - 4)}${C.reset}`, W));
+    lines.push(emptyBox(W));
+    lines.push(box(centerIn(`${C.dim}No favorite Claude set${C.reset}`, inner), W));
+    lines.push(emptyBox(W));
+    lines.push(box(centerIn(`${C.dim}Go to Collection > select a Claude${C.reset}`, inner), W));
+    lines.push(box(centerIn(`${C.dim}and press [F] to set as favorite${C.reset}`, inner), W));
+    lines.push(emptyBox(W));
+
+    while (lines.length < 20) lines.push(emptyBox(W));
+
+    lines.push(midB(W));
+    lines.push(box(`${C.dim}[N]Name [Tab]Next${C.reset}`, W));
+    lines.push(botB(W));
+  } else {
+    // Card preview — show the actual card that will be copied
+    const card = generateCard(persistent);
+    const cardLines = card.split('\n');
+
+    // Center card lines in terminal
+    for (const cl of cardLines) {
+      const pad = Math.max(0, Math.floor((W - visWidth(cl)) / 2));
+      lines.push(' '.repeat(pad) + cl);
+    }
+
+    lines.push('');
+
+    // Copy feedback
+    const lastLog = (game.actionLog || []).slice(-1)[0] || '';
+    if (lastLog.toLowerCase().includes('clipboard')) {
+      const pad = Math.max(0, Math.floor((W - visWidth(lastLog) - 2) / 2));
+      lines.push(`${' '.repeat(pad)}${C.green}${lastLog}${C.reset}`);
+    }
+
+    // Controls — plain text below card
+    const ctrl = `${C.dim}[N]Name [C]Copy card [Tab]Next${C.reset}`;
+    const ctrlPad = Math.max(0, Math.floor((W - 30) / 2));
+    lines.push(`${' '.repeat(ctrlPad)}${ctrl}`);
   }
-
-  while (lines.length < 20) lines.push(emptyBox(W));
-
-  lines.push(midB(W));
-  lines.push(box(`${C.dim}[N]Name [C]Copy card [Tab]Next${C.reset}`, W));
-  lines.push(botB(W));
 
   return lines.join('\n');
 }
