@@ -62,6 +62,8 @@ function migrateState(state) {
   if (!state.achievements) state.achievements = [];
   if (!state.gacha) state.gacha = { pity: { epic: 0, legendary: 0 }, totalPulls: 0 };
   if (state.selectedTitle === undefined) state.selectedTitle = null;
+  if (state.nickname === undefined) state.nickname = null;
+  if (state.favoriteClaude === undefined) state.favoriteClaude = null;
   return state;
 }
 
@@ -75,6 +77,8 @@ function createDefaultState() {
     achievements: {},
     gacha: { pity: { epic: 0, legendary: 0 }, totalPulls: 0 },
     selectedTitle: null,  // achievement ID with title field
+    nickname: null,       // string, max 16 chars
+    favoriteClaude: null, // claude ID from collection
   };
 }
 
@@ -437,6 +441,32 @@ export function equipTitle(game, achievementId) {
     game.actionLog.push(`Title equipped: ${ach.title}`);
   }
 
+  saveState(persistent);
+  return game;
+}
+
+export function setNickname(game, name) {
+  const { persistent } = game;
+  const trimmed = name.trim().slice(0, 16);
+  persistent.nickname = trimmed || null;
+  game.actionLog.push(trimmed ? `Nickname set: ${trimmed}` : 'Nickname cleared.');
+  saveState(persistent);
+  return game;
+}
+
+export function setFavoriteClaude(game, claudeId) {
+  const { persistent } = game;
+  if (claudeId && !isDiscovered(persistent.collection, claudeId)) {
+    game.actionLog.push('Not in collection!');
+    return game;
+  }
+  persistent.favoriteClaude = claudeId || null;
+  if (claudeId) {
+    const cl = ALL_CLAUDES.find(c => c.id === claudeId);
+    game.actionLog.push(`Favorite set: ${cl ? cl.name : claudeId}`);
+  } else {
+    game.actionLog.push('Favorite cleared.');
+  }
   saveState(persistent);
   return game;
 }

@@ -7,6 +7,8 @@ import {
 import { FACILITIES, FACILITY_KEYS, getFacilityValue, getUpgradeCost } from './facilities.mjs';
 import { getDiscoveredIds, isDiscovered } from './game.mjs';
 import { ACHIEVEMENTS, CATEGORIES, getVisibleAchievements, getEquippedTitle } from './achievements.mjs';
+import { generateCard } from './profile.mjs';
+import { userInfo } from 'node:os';
 
 // ANSI escape codes
 const C = {
@@ -266,10 +268,17 @@ function renderCollection(game) {
       ), W));
     }
 
+    // Favorite indicator
+    const isFav = persistent.favoriteClaude === cl.id;
+    if (isFav) {
+      lines.push(box(centerIn(`${C.red}\u2665${C.reset} ${C.bold}Favorite${C.reset}`, inner), W));
+    }
+
     while (lines.length < 20) lines.push(emptyBox(W));
 
     lines.push(midB(W));
-    lines.push(box(`${C.dim}[Esc/Tab] Back to list${C.reset}`, W));
+    const favHint = isFav ? '[F]Unfavorite' : '[F]Favorite';
+    lines.push(box(`${C.dim}${favHint} [Esc/Tab] Back${C.reset}`, W));
     lines.push(botB(W));
     return lines.join('\n');
   }
@@ -650,6 +659,85 @@ export function renderSplash() {
 }
 
 // ═══════════════════════════════════════════════════
+// PROFILE VIEW — nickname, favorite, stats
+// ═══════════════════════════════════════════════════
+function renderProfile(game) {
+  const W = getWidth();
+  const inner = W - 4;
+  const lines = [];
+  const { persistent } = game;
+  const mode = game.profileMode || 'view';
+
+  // ─── Edit Nickname mode ───
+  if (mode === 'editNickname') {
+    lines.push(topB(W));
+    lines.push(box(centerIn(`${C.orange}${C.bold}Set Nickname${C.reset}`, inner), W));
+    lines.push(midB(W));
+    lines.push(emptyBox(W));
+    lines.push(emptyBox(W));
+
+    const draft = game.nicknameDraft || '';
+    lines.push(box(centerIn(`${C.bold}${draft}_${C.reset}`, inner), W));
+    lines.push(emptyBox(W));
+    lines.push(box(centerIn(`${C.dim}Max 16 characters${C.reset}`, inner), W));
+
+    while (lines.length < 20) lines.push(emptyBox(W));
+
+    lines.push(midB(W));
+    lines.push(box(`${C.dim}[Enter] Confirm  [Esc] Cancel${C.reset}`, W));
+    lines.push(botB(W));
+    return lines.join('\n');
+  }
+
+  // ─── View mode (default) ───
+  if (!persistent.favoriteClaude) {
+    // No favorite — show prompt to set one
+    lines.push(topB(W));
+    lines.push(box(centerIn(`${C.orange}${C.bold}Profile${C.reset}`, inner), W));
+    lines.push(midB(W));
+    lines.push(emptyBox(W));
+    lines.push(emptyBox(W));
+    lines.push(box(centerIn(`${C.dim}No favorite Claude set${C.reset}`, inner), W));
+    lines.push(emptyBox(W));
+    lines.push(box(centerIn(`${C.dim}Go to Collection > select a Claude${C.reset}`, inner), W));
+    lines.push(box(centerIn(`${C.dim}and press [F] to set as favorite${C.reset}`, inner), W));
+    lines.push(emptyBox(W));
+
+    while (lines.length < 20) lines.push(emptyBox(W));
+
+    lines.push(midB(W));
+    lines.push(box(`${C.dim}[N]Name [Tab]Next${C.reset}`, W));
+    lines.push(botB(W));
+  } else {
+    // Card preview — show the actual card that will be copied
+    const card = generateCard(persistent);
+    const cardLines = card.split('\n');
+
+    // Center card lines in terminal
+    for (const cl of cardLines) {
+      const pad = Math.max(0, Math.floor((W - visWidth(cl)) / 2));
+      lines.push(' '.repeat(pad) + cl);
+    }
+
+    lines.push('');
+
+    // Copy feedback
+    const lastLog = (game.actionLog || []).slice(-1)[0] || '';
+    if (lastLog.toLowerCase().includes('clipboard')) {
+      const pad = Math.max(0, Math.floor((W - visWidth(lastLog) - 2) / 2));
+      lines.push(`${' '.repeat(pad)}${C.green}${lastLog}${C.reset}`);
+    }
+
+    // Controls — plain text below card
+    const ctrl = `${C.dim}[N]Name [C]Copy card [Tab]Next${C.reset}`;
+    const ctrlPad = Math.max(0, Math.floor((W - 30) / 2));
+    lines.push(`${' '.repeat(ctrlPad)}${ctrl}`);
+  }
+
+  return lines.join('\n');
+}
+
+// ═══════════════════════════════════════════════════
 // MAIN RENDER DISPATCHER
 // ═══════════════════════════════════════════════════
 export function render(game) {
@@ -659,6 +747,7 @@ export function render(game) {
     case 'upgrades': return renderUpgrades(game);
     case 'gacha': return renderGacha(game);
     case 'achievements': return renderAchievements(game);
+    case 'profile': return renderProfile(game);
     default: return renderGarden(game);
   }
 }
