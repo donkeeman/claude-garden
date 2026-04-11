@@ -151,6 +151,10 @@ export function generateCard(persistent) {
   lines.push(leftRow(`Gacha       ${gachaPulls} pulls`));
   lines.push(leftRow(`Sessions    ${sessions}`));
 
+  // ── Install command footer ───────────────────────────────────
+  lines.push(divider());
+  lines.push(centerRow('claude plugin add claude-garden'));
+
   // ── Bottom border ────────────────────────────────────────────
   lines.push('╚' + '═'.repeat(CARD_WIDTH - 2) + '╝');
 
