@@ -1,7 +1,7 @@
 // Claude Garden — Profile card generator and clipboard module
 
 import { execSync } from 'node:child_process';
-import { platform } from 'node:os';
+import { platform, userInfo } from 'node:os';
 import { ALL_CLAUDES, RARITY_STARS, RARITY_NAMES } from './claudes.mjs';
 import { getDiscoveredIds } from './game.mjs';
 import { getEquippedTitle } from './achievements.mjs';
@@ -88,7 +88,9 @@ export function generateCard(persistent) {
   // ── Title bar ───────────────────────────────────────────────
   lines.push(centerRow('Claude Garden'));
 
-  const nickname = persistent.nickname || 'Anonymous';
+  let defaultName = 'Anonymous';
+  try { defaultName = userInfo().username || defaultName; } catch {}
+  const nickname = persistent.nickname || defaultName;
   const equippedTitle = getEquippedTitle(persistent);
   const headerLine = equippedTitle
     ? `${nickname}  "${equippedTitle}"`

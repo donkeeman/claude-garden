@@ -208,57 +208,10 @@ function setupKeyboard() {
         return; // Consume all other keys in edit mode
       }
 
-      // ── Favorite selection mode ──
-      if (profileMode === 'selectFavorite') {
-        const discoveredIds = getDiscoveredIds(game.persistent.collection);
-        const discovered = ALL_CLAUDES.filter(c => discoveredIds.includes(c.id));
-        const maxIdx = Math.max(0, discovered.length - 1);
-
-        if (key === '\x1b[A') {
-          game.favoriteCursor = Math.max(0, (game.favoriteCursor || 0) - 1);
-          lastRender = '';
-          renderFrame();
-          return;
-        }
-        if (key === '\x1b[B') {
-          game.favoriteCursor = Math.min(maxIdx, (game.favoriteCursor || 0) + 1);
-          lastRender = '';
-          renderFrame();
-          return;
-        }
-        if (key === '\r' || key === '\n') {
-          if (discovered.length > 0) {
-            const idx = game.favoriteCursor || 0;
-            const cl = discovered[idx];
-            game = setFavoriteClaude(game, cl.id);
-          }
-          game.profileMode = 'view';
-          game.favoriteCursor = undefined;
-          lastRender = '';
-          renderFrame();
-          return;
-        }
-        if (key === '\x1b') {
-          game.profileMode = 'view';
-          game.favoriteCursor = undefined;
-          lastRender = '';
-          renderFrame();
-          return;
-        }
-        return; // Consume all other keys in select mode
-      }
-
       // ── View mode controls ──
       if (key === 'n' || key === 'N') {
         game.profileMode = 'editNickname';
         game.nicknameDraft = game.persistent.nickname || '';
-        lastRender = '';
-        renderFrame();
-        return;
-      }
-      if (key === 'f' || key === 'F') {
-        game.profileMode = 'selectFavorite';
-        game.favoriteCursor = 0;
         lastRender = '';
         renderFrame();
         return;
@@ -383,6 +336,16 @@ function setupKeyboard() {
           renderFrame();
         }
       }
+      return;
+    }
+
+    // F → toggle favorite in collection detail
+    if ((key === 'f' || key === 'F') && game.screen === 'collection' && game.detailClaude) {
+      const cl = game.detailClaude;
+      const newFav = game.persistent.favoriteClaude === cl.id ? null : cl.id;
+      game = setFavoriteClaude(game, newFav);
+      lastRender = '';
+      renderFrame();
       return;
     }
 
