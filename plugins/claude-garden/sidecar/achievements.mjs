@@ -12,6 +12,7 @@ export const CATEGORIES = {
   session:    { name: 'Session',    icon: '##' },
   behavior:   { name: 'Behavior',   icon: '~~' },
   gacha:      { name: 'Gacha',      icon: '**' },
+  streak:     { name: 'Streak',    icon: '>>' },
 };
 
 export const ACHIEVEMENTS = [
@@ -270,6 +271,30 @@ export const ACHIEVEMENTS = [
     desc: 'Hit the Legendary pity ceiling (80 pulls).',
     hint: 'The ultimate unlucky streak.',
     check: (p) => p.gacha && p.gacha._hitPityLegendary,
+  },
+
+  // ─── Streak ───
+  {
+    id: 'streak_3', name: 'Getting Started', icon: '>3>',
+    category: 'streak',
+    desc: '3-day streak.',
+    hint: 'Come back 3 days in a row.',
+    check: (p) => p.streak && p.streak.max >= 3,
+  },
+  {
+    id: 'streak_7', name: 'One Week', icon: '>7>',
+    category: 'streak',
+    desc: '7-day streak.',
+    hint: 'A full week of dedication.',
+    check: (p) => p.streak && p.streak.max >= 7,
+  },
+  {
+    id: 'streak_30', name: 'No Days Off', icon: '>>>',
+    category: 'streak',
+    desc: '30-day streak.',
+    hint: 'A whole month. Respect.',
+    title: 'Devoted',
+    check: (p) => p.streak && p.streak.max >= 30,
   },
 ];
 

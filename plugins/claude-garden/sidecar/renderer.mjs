@@ -131,7 +131,9 @@ function renderGarden(game) {
 
   // Title bar
   lines.push(topB(W));
-  const coinStr = `${C.yellow}${persistent.coins}c${C.reset}`;
+  const streak = persistent.streak?.current || 0;
+  const streakStr = streak > 0 ? `${C.red}${streak}d${C.reset} ` : '';
+  const coinStr = `${streakStr}${C.yellow}${persistent.coins}c${C.reset}`;
   const equippedTitle = getEquippedTitle(persistent);
   const titleSuffix = equippedTitle ? ` ${C.cyan}[${equippedTitle}]${C.reset}` : '';
   const title = `${C.orange}${C.bold}Claude Garden${C.reset}${titleSuffix}`;

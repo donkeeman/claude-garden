@@ -64,6 +64,7 @@ function migrateState(state) {
   if (state.selectedTitle === undefined) state.selectedTitle = null;
   if (state.nickname === undefined) state.nickname = null;
   if (state.favoriteClaude === undefined) state.favoriteClaude = null;
+  if (!state.streak) state.streak = { current: 0, lastCheckIn: null, max: 0 };
   return state;
 }
 
@@ -78,7 +79,8 @@ function createDefaultState() {
     gacha: { pity: { epic: 0, legendary: 0 }, totalPulls: 0 },
     selectedTitle: null,  // achievement ID with title field
     nickname: null,       // string, max 16 chars
-    favoriteClaude: null, // claude ID from collection
+    favoriteClaude: null, // cloud ID from collection
+    streak: { current: 0, lastCheckIn: null, max: 0 },
   };
 }
 
@@ -96,9 +98,40 @@ export function isDiscovered(collection, id) {
   return id in collection;
 }
 
+// Local date string (YYYY-MM-DD) for streak comparison
+function getLocalDate() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function checkStreak(persistent) {
+  const today = getLocalDate();
+  const streak = persistent.streak;
+  if (streak.lastCheckIn === today) return false; // already checked in
+
+  if (streak.lastCheckIn) {
+    // Check if yesterday
+    const last = new Date(streak.lastCheckIn + 'T00:00:00');
+    const now = new Date(today + 'T00:00:00');
+    const diffDays = Math.round((now - last) / (1000 * 60 * 60 * 24));
+    if (diffDays === 1) {
+      streak.current++;
+    } else {
+      streak.current = 1; // gap > 1 day, reset
+    }
+  } else {
+    streak.current = 1; // first check-in
+  }
+
+  streak.lastCheckIn = today;
+  if (streak.current > streak.max) streak.max = streak.current;
+  return true; // new check-in happened
+}
+
 export function createGame(sessionId) {
   const persistent = loadState();
   persistent.stats.sessionsPlayed++;
+  const isNewDay = checkStreak(persistent);
   saveState(persistent);
 
   const game = {
@@ -115,6 +148,11 @@ export function createGame(sessionId) {
     consecutiveBash: 0,  // consecutive Bash tool calls
     consecutiveFails: 0, // consecutive tool failures
   };
+
+  if (isNewDay) {
+    const s = persistent.streak;
+    game.actionLog.push(`Day ${s.current} streak!${s.current >= 3 ? ' Keep it up!' : ''}`);
+  }
 
   checkAndNotifyAchievements(game);
   return game;
