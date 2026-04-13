@@ -1,7 +1,6 @@
 // Claude Garden — Profile card generator and clipboard module
 
-import { execSync } from 'node:child_process';
-import { platform, userInfo } from 'node:os';
+import { userInfo } from 'node:os';
 import { ALL_CLAUDES, RARITY_STARS, RARITY_NAMES } from './claudes.mjs';
 import { getDiscoveredIds } from './game.mjs';
 import { getEquippedTitle } from './achievements.mjs';
@@ -180,25 +179,4 @@ export function generateCard(persistent) {
   lines.push('╚' + '═'.repeat(CARD_WIDTH - 2) + '╝');
 
   return lines.join('\n');
-}
-
-export function copyToClipboard(text) {
-  const os = platform();
-  try {
-    if (os === 'win32') {
-      execSync('clip', { input: text, stdio: ['pipe', 'ignore', 'ignore'] });
-    } else if (os === 'darwin') {
-      execSync('pbcopy', { input: text, stdio: ['pipe', 'ignore', 'ignore'] });
-    } else {
-      // Linux: try xclip first, fall back to xsel
-      try {
-        execSync('xclip -selection clipboard', { input: text, stdio: ['pipe', 'ignore', 'ignore'] });
-      } catch {
-        execSync('xsel --clipboard --input', { input: text, stdio: ['pipe', 'ignore', 'ignore'] });
-      }
-    }
-    return true;
-  } catch {
-    return false;
-  }
 }

@@ -8,7 +8,7 @@ import { homedir } from 'node:os';
 import { createGame, processToolCall, processToolFail, collectAll, upgrade, finishSession, idleSpawn, gachaRoll, equipTitle, setNickname, setFavoriteClaude, getDiscoveredIds, isDiscovered } from './game.mjs';
 import { render, renderSplash } from './renderer.mjs';
 import { ALL_CLAUDES } from './claudes.mjs';
-import { generateCard, copyToClipboard } from './profile.mjs';
+import { saveCardImage } from './card-image.mjs';
 import { FACILITY_KEYS } from './facilities.mjs';
 import { getVisibleAchievements, CATEGORIES } from './achievements.mjs';
 
@@ -217,9 +217,13 @@ function setupKeyboard() {
         return;
       }
       if (key === 'c' || key === 'C') {
-        const card = generateCard(game.persistent);
-        const ok = copyToClipboard(card);
-        game.actionLog.push(ok ? 'Copied to clipboard!' : 'Clipboard copy failed.');
+        const path = saveCardImage(game.persistent);
+        if (path) {
+          const filename = path.split(/[\\/]/).pop();
+          game.actionLog.push(`Saved: ${filename}`);
+        } else {
+          game.actionLog.push('Save failed.');
+        }
         lastRender = '';
         renderFrame();
         return;
