@@ -12,6 +12,9 @@ const eventsFile = join(dir, 'events.jsonl');
 const pidFile = join(dir, 'sidecar.pid');
 const lockFile = join(dir, 'sidecar.lock');
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const pluginDir = join(__dirname, '..');
+
 function main(input) {
   let session = 'unknown';
   try {
@@ -30,8 +33,6 @@ function main(input) {
 
   try {
     writeFileSync(pidFile, 'launching');
-    const __dirname = dirname(fileURLToPath(import.meta.url));
-    const pluginDir = join(__dirname, '..');
     launchSidecar(pluginDir);
   } finally {
     releaseLock();
@@ -77,6 +78,48 @@ setTimeout(() => {
   main(input);
 }, 500);
 
+function getCurrentPluginVersion() {
+  try {
+    const pkg = JSON.parse(readFileSync(join(pluginDir, '.claude-plugin', 'plugin.json'), 'utf-8'));
+    return pkg.version || null;
+  } catch {
+    return null;
+  }
+}
+
+function getRunningProcessCommand(pid) {
+  try {
+    if (platform() === 'win32') {
+      const out = execSync(
+        `powershell -NoProfile -Command "(Get-CimInstance Win32_Process -Filter \\"ProcessId=${pid}\\").CommandLine"`,
+        { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }
+      );
+      return out.trim();
+    } else {
+      const out = execSync(`ps -p ${pid} -o command=`, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] });
+      return out.trim();
+    }
+  } catch {
+    return null;
+  }
+}
+
+function extractVersionFromCommand(cmd) {
+  // Match installed plugin path: cache/claude-garden/claude-garden/<version>/sidecar/...
+  const match = cmd.match(/claude-garden[\/\\]claude-garden[\/\\]([^\/\\]+)[\/\\]sidecar/);
+  return match ? match[1] : null;
+}
+
+function killProcess(pid) {
+  try {
+    if (platform() === 'win32') {
+      execSync(`taskkill /PID ${pid} /F`, { stdio: 'ignore' });
+    } else {
+      process.kill(Number(pid));
+    }
+  } catch {}
+}
+
 function isSidecarRunning() {
   if (!existsSync(pidFile)) return false;
   const pid = readFileSync(pidFile, 'utf-8').trim();
@@ -91,17 +134,35 @@ function isSidecarRunning() {
     } catch { return false; }
   }
 
+  // Step 1: check if the PID is alive at all
+  let alive = false;
   try {
     if (platform() === 'win32') {
       const out = execSync(`tasklist /FI "PID eq ${pid}" /NH`, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] });
-      return out.includes(pid);
+      alive = out.includes(pid);
     } else {
       process.kill(Number(pid), 0);
-      return true;
+      alive = true;
     }
   } catch {
     return false;
   }
+  if (!alive) return false;
+
+  // Step 2: verify the running sidecar matches the current plugin version.
+  // If the user updated the plugin while a sidecar was already running,
+  // the old process keeps the PID file and blocks new launches forever.
+  const currentVersion = getCurrentPluginVersion();
+  const runningCmd = getRunningProcessCommand(pid);
+  if (currentVersion && runningCmd) {
+    const runningVersion = extractVersionFromCommand(runningCmd);
+    if (runningVersion && runningVersion !== currentVersion) {
+      killProcess(pid);
+      return false;
+    }
+  }
+
+  return true;
 }
 
 function launchSidecar(pluginDir) {
