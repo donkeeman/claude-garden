@@ -723,15 +723,15 @@ function renderProfile(game) {
 
     lines.push('');
 
-    // Copy feedback
+    // Save feedback
     const lastLog = (game.actionLog || []).slice(-1)[0] || '';
-    if (lastLog.toLowerCase().includes('clipboard')) {
+    if (lastLog.startsWith('Saved:') || lastLog.startsWith('Save failed')) {
       const pad = Math.max(0, Math.floor((W - visWidth(lastLog) - 2) / 2));
       lines.push(`${' '.repeat(pad)}${C.green}${lastLog}${C.reset}`);
     }
 
     // Controls — plain text below card
-    const ctrl = `${C.dim}[N]Name [C]Copy card [Tab]Next${C.reset}`;
+    const ctrl = `${C.dim}[N]Name [C]Save PNG [Tab]Next${C.reset}`;
     const ctrlPad = Math.max(0, Math.floor((W - 30) / 2));
     lines.push(`${' '.repeat(ctrlPad)}${ctrl}`);
   }
