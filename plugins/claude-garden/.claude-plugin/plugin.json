@@ -1,6 +1,6 @@
 {
   "name": "claude-garden",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Collect unique Claude variants while coding — idle collection game sidecar for Claude Code",
   "author": {
     "name": "donkeeman"
