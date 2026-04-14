@@ -198,6 +198,23 @@ export const UNICODE_TO_CP437 = {
   // Common symbols
   0x2605: 0x2A, // ★ → *
   0x2661: 0x03, // ♡ → CP437 heart (♥)
+  0x25C6: 0x04, // ◆ → ♦ (CP437 diamond)
+  0x25C7: 0x04, // ◇ → ♦
+  0x2022: 0x07, // • bullet
+  0x266A: 0x0D, // ♪ eighth note
+  0x25B2: 0x1E, // ▲ black up triangle
+  0x25BC: 0x1F, // ▼ black down triangle
+  0x25BD: 0x1F, // ▽ → ▼
+  0x25B6: 0x10, // ▶ right-pointing triangle
+  0x25C0: 0x11, // ◀ left-pointing triangle
+  0x00B0: 0xF8, // ° degree sign
+  0x00B7: 0xFA, // · middle dot
+  // No CP437 diagonals — fall back to ASCII
+  0x2571: 0x2F, // ╱ → /
+  0x2572: 0x5C, // ╲ → \
+  // No CP437 corner triangles — fall back to lower half block
+  0x25E2: 0xDC, // ◢
+  0x25E3: 0xDC, // ◣
 };
 
 export function unicodeToCp437(ch) {
