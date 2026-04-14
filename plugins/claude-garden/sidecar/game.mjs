@@ -3,7 +3,7 @@
 import { ALL_CLAUDES, RARITY_STARS, DUP_BONUS } from './claudes.mjs';
 import { FACILITIES, FACILITY_KEYS, getFacilityValue, getUpgradeCost } from './facilities.mjs';
 import { checkAchievements, getAchievement, getTitleAchievements } from './achievements.mjs';
-import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync, renameSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { homedir } from 'node:os';
@@ -12,6 +12,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // Store state in version-independent path to survive plugin updates
 const STATE_DIR = join(homedir(), '.claude', 'claude-garden');
 const STATE_PATH = join(STATE_DIR, 'state.json');
+const STATE_BACKUP_PATH = join(STATE_DIR, 'state.json.bak');
+const STATE_TMP_PATH = join(STATE_DIR, 'state.json.tmp');
 const LEGACY_STATE_PATH = join(__dirname, '..', 'state.json');
 
 // Rarity spawn weights (before cooling multiplier)
@@ -24,15 +26,31 @@ const GACHA_WEIGHTS = { 1: 50, 2: 30, 3: 14, 4: 5, 5: 1 };
 const GACHA_PITY_EPIC = 30;
 const GACHA_PITY_LEGENDARY = 80;
 
+function tryLoadStateFile(path) {
+  if (!existsSync(path)) return null;
+  try {
+    const raw = readFileSync(path, 'utf-8');
+    if (raw.trim().length === 0) return null;
+    return migrateState(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
 function loadState() {
   // Ensure state directory exists
   if (!existsSync(STATE_DIR)) mkdirSync(STATE_DIR, { recursive: true });
 
-  if (existsSync(STATE_PATH)) {
-    try {
-      const state = JSON.parse(readFileSync(STATE_PATH, 'utf-8'));
-      return migrateState(state);
-    } catch {}
+  // Try primary state file
+  const primary = tryLoadStateFile(STATE_PATH);
+  if (primary) return primary;
+
+  // Primary missing/corrupt — fall back to backup
+  const backup = tryLoadStateFile(STATE_BACKUP_PATH);
+  if (backup) {
+    // Restore backup as primary
+    saveState(backup);
+    return backup;
   }
 
   // Migrate from legacy version-specific path
@@ -84,8 +102,25 @@ function createDefaultState() {
   };
 }
 
+// Atomic save: write to .tmp, rotate current → .bak, rename .tmp → primary.
+// If any step fails (e.g. ENOSPC), the existing state.json is left untouched
+// and the user can recover from state.json.bak on next load.
 function saveState(state) {
-  writeFileSync(STATE_PATH, JSON.stringify(state, null, 2));
+  const data = JSON.stringify(state, null, 2);
+  try {
+    writeFileSync(STATE_TMP_PATH, data);
+    if (existsSync(STATE_PATH)) {
+      if (existsSync(STATE_BACKUP_PATH)) {
+        try { unlinkSync(STATE_BACKUP_PATH); } catch {}
+      }
+      renameSync(STATE_PATH, STATE_BACKUP_PATH);
+    }
+    renameSync(STATE_TMP_PATH, STATE_PATH);
+  } catch {
+    if (existsSync(STATE_TMP_PATH)) {
+      try { unlinkSync(STATE_TMP_PATH); } catch {}
+    }
+  }
 }
 
 // 발견된 클로드 ID 목록 (순서 유지)
