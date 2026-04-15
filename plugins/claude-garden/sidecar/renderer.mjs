@@ -723,11 +723,11 @@ function renderProfile(game) {
 
     lines.push('');
 
-    // Save feedback
-    const lastLog = (game.actionLog || []).slice(-1)[0] || '';
-    if (lastLog.startsWith('Saved:') || lastLog.startsWith('Save failed')) {
-      const pad = Math.max(0, Math.floor((W - visWidth(lastLog) - 2) / 2));
-      lines.push(`${' '.repeat(pad)}${C.green}${lastLog}${C.reset}`);
+    // Save feedback — persistent until next save attempt
+    const saveResult = game.lastSaveResult || '';
+    if (saveResult) {
+      const pad = Math.max(0, Math.floor((W - visWidth(saveResult) - 2) / 2));
+      lines.push(`${' '.repeat(pad)}${C.green}${saveResult}${C.reset}`);
     }
 
     // Controls — plain text below card

@@ -218,11 +218,7 @@ function setupKeyboard() {
       }
       if (key === 'c' || key === 'C') {
         const path = saveCardImage(game.persistent);
-        if (path) {
-          game.actionLog.push(`Saved: ${path}`);
-        } else {
-          game.actionLog.push('Save failed.');
-        }
+        game.lastSaveResult = path ? `Saved: ${path}` : 'Save failed.';
         lastRender = '';
         renderFrame();
         return;
