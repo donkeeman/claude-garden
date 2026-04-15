@@ -219,8 +219,7 @@ function setupKeyboard() {
       if (key === 'c' || key === 'C') {
         const path = saveCardImage(game.persistent);
         if (path) {
-          const filename = path.split(/[\\/]/).pop();
-          game.actionLog.push(`Saved: ${filename}`);
+          game.actionLog.push(`Saved: ${path}`);
         } else {
           game.actionLog.push('Save failed.');
         }
