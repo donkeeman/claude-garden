@@ -26,6 +26,10 @@ const GACHA_WEIGHTS = { 1: 50, 2: 30, 3: 14, 4: 5, 5: 1 };
 const GACHA_PITY_EPIC = 30;
 const GACHA_PITY_LEGENDARY = 80;
 
+// Set by loadState when recovery from .bak happens, read once by createGame
+// to surface a warning to the user, then cleared.
+let recoveredFromBackup = false;
+
 function tryLoadStateFile(path) {
   if (!existsSync(path)) return null;
   try {
@@ -41,6 +45,10 @@ function loadState() {
   // Ensure state directory exists
   if (!existsSync(STATE_DIR)) mkdirSync(STATE_DIR, { recursive: true });
 
+  // Snapshot primary existence BEFORE attempting load — distinguishes
+  // "pristine install" from "had state, got corrupted".
+  const primaryExistedAtStart = existsSync(STATE_PATH);
+
   // Try primary state file
   const primary = tryLoadStateFile(STATE_PATH);
   if (primary) return primary;
@@ -48,7 +56,9 @@ function loadState() {
   // Primary missing/corrupt — fall back to backup
   const backup = tryLoadStateFile(STATE_BACKUP_PATH);
   if (backup) {
-    // Restore backup as primary
+    // If primary existed at start but we couldn't load it, real data loss
+    // was prevented by .bak — surface this to the user via actionLog.
+    if (primaryExistedAtStart) recoveredFromBackup = true;
     saveState(backup);
     return backup;
   }
@@ -183,6 +193,11 @@ export function createGame(sessionId) {
     consecutiveBash: 0,  // consecutive Bash tool calls
     consecutiveFails: 0, // consecutive tool failures
   };
+
+  if (recoveredFromBackup) {
+    game.actionLog.push('⚠ Restored from backup — primary state was corrupt');
+    recoveredFromBackup = false;
+  }
 
   if (isNewDay) {
     const s = persistent.streak;
