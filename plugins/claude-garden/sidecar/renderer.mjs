@@ -633,15 +633,9 @@ export function renderSplash() {
   const inner = W - 4;
   const lines = [];
 
-  // Big mascot for splash (Unicode block chars, 7 chars wide)
-  const mascot = [
-    `${C.orange}  \u259B\u2588\u2588\u2588\u259C  ${C.reset}`,
-    `${C.orange}  \u2588   \u2588  ${C.reset}`,
-    `${C.orange}  \u2588\u00B7 \u00B7\u2588  ${C.reset}`,
-    `${C.orange}  \u2588   \u2588  ${C.reset}`,
-    `${C.orange}  \u2599\u2588 \u2588\u259F  ${C.reset}`,
-    `${C.orange}   \u2598 \u259D   ${C.reset}`,
-  ];
+  // Use the canonical normal Claude sprite as the splash mascot
+  const normalClaude = ALL_CLAUDES.find(c => c.id === 'normal');
+  const mascot = normalClaude.sprite.map(line => `${C.orange}${line}${C.reset}`);
 
   lines.push(topB(W));
   lines.push(emptyBox(W));
